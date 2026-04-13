@@ -6,6 +6,9 @@ RUN apt-get update && apt-get install -y \
               build-essential \  
               python3 \
               python3-pip \
+              iproute2 \  
+              iptables \
+              tcpdump \
         && rm -rf /var/lib/apt/lists/*
 ENV DEBIAN_FRONTEND=
 
@@ -26,6 +29,23 @@ RUN cd /srv/iec61850_open_client && pip3 install --break-system-packages -r requ
 COPY . /srv/iec61850_open_client
 
 WORKDIR /srv/iec61850_open_client
+
+
+# --- ДОБАВЛЯЕМ BEELZEBUB ---
+# Копируем сертификаты, бинарник и конфиги напрямую из вашего образа custom-beelzebub
+COPY --from=custom-beelzebub /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=custom-beelzebub /opt/beelzebub /opt/beelzebub
+
+# Копируем и настраиваем стартовый скрипт
+COPY ./entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Добавляем порты Beelzebub к портам клиента
+EXPOSE 22 80 2222 8080
+
+# Используем наш скрипт как точку входа
+ENTRYPOINT ["/entrypoint.sh"]
+
 
 EXPOSE 5000
 
