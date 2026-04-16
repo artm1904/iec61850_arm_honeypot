@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang='ru'>
+<head>
+<meta charset="utf-8">
+<title>АИИС РЗА — Вход в систему</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: linear-gradient(135deg, #0a0e17 0%, #111927 50%, #0d1117 100%);
+    color: #c9d1d9;
+    font-family: 'Roboto', 'Segoe UI', Tahoma, sans-serif;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  /* Subtle grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+      linear-gradient(rgba(0, 185, 160, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 185, 160, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: 0;
+  }
+
+  .login-container {
+    position: relative;
+    z-index: 1;
+    width: 460px;
+  }
+
+  /* Header banner */
+  .system-banner {
+    background: linear-gradient(90deg, #00b9a0, #006d5b);
+    color: #000;
+    text-align: center;
+    padding: 14px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-radius: 4px 4px 0 0;
+  }
+
+  .login-box {
+    background: rgba(22, 27, 34, 0.95);
+    border: 1px solid #30363d;
+    border-top: none;
+    padding: 28px 32px 24px;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  }
+
+  .login-box h2 {
+    color: #00b9a0;
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    text-align: center;
+  }
+
+  .login-box .subtitle {
+    text-align: center;
+    font-size: 11px;
+    color: #6e7681;
+    margin-bottom: 22px;
+    letter-spacing: 0.5px;
+  }
+
+  .form-group {
+    margin-bottom: 14px;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: #8b949e;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .form-group input[type="text"],
+  .form-group input[type="password"] {
+    width: 100%;
+    padding: 10px 12px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 3px;
+    color: #c9d1d9;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus {
+    outline: none;
+    border-color: #00b9a0;
+    box-shadow: 0 0 0 2px rgba(0, 185, 160, 0.15);
+  }
+
+  .form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 3px;
+    color: #c9d1d9;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  .form-group select:focus {
+    outline: none;
+    border-color: #00b9a0;
+  }
+
+  .btn-login {
+    width: 100%;
+    padding: 11px;
+    background: linear-gradient(90deg, #00b9a0, #009688);
+    color: #000;
+    border: none;
+    border-radius: 3px;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: opacity 0.2s;
+  }
+
+  .btn-login:hover { opacity: 0.85; }
+
+  .btn-guest {
+    width: 100%;
+    padding: 9px;
+    background: transparent;
+    color: #6e7681;
+    border: 1px dashed #30363d;
+    border-radius: 3px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .btn-guest:hover {
+    color: #c9d1d9;
+    border-color: #c9d1d9;
+  }
+
+  .error-message {
+    color: #f85149;
+    background: rgba(248, 81, 73, 0.1);
+    border: 1px solid rgba(248, 81, 73, 0.3);
+    border-radius: 3px;
+    padding: 8px 12px;
+    margin-bottom: 16px;
+    text-align: center;
+    font-size: 13px;
+  }
+
+  .footer-info {
+    text-align: center;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid #21262d;
+    font-size: 10px;
+    color: #484f58;
+    line-height: 1.6;
+  }
+
+  .status-indicator {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #3fb950;
+    margin-right: 5px;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .role-hint {
+    font-size: 11px;
+    color: #6e7681;
+    margin-top: 3px;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="system-banner">
+      <span class="status-indicator"></span>
+      АРМ специалиста РЗА — ПС 110/35/10 кВ «Подстанция»
+    </div>
+    <div class="login-box">
+      <h2>Авторизация</h2>
+      <div class="subtitle">Автоматизированная информационно-измерительная система</div>
+
+      {% if error %}
+        <div class="error-message">⚠ {{ error }}</div>
+      {% endif %}
+
+      <form method="POST" action="{{ url_for('login') }}" id="loginForm">
+        <div class="form-group">
+          <label for="role">Роль / Уровень доступа</label>
+          <select id="role" name="role" onchange="toggleGuestMode(this)">
+            {% for key, val in roles.items() %}
+              {% if key != 'guest' %}
+              <option value="{{ key }}">{{ val.label }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+          <div class="role-hint" id="roleHint">Полный доступ к управлению и конфигурации</div>
+        </div>
+
+        <div class="form-group" id="usernameGroup">
+          <label for="username">Имя пользователя / Табельный номер</label>
+          <input type="text" id="username" name="username" placeholder="Например: artm1904" required autofocus>
+        </div>
+
+        <div class="form-group" id="passwordGroup">
+          <label for="password">Пароль / ПИН</label>
+          <input type="password" id="password" name="password" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="btn-login" id="btnLogin">Войти в систему</button>
+      </form>
+
+      <form method="POST" action="{{ url_for('login') }}" id="guestForm" style="display:none;">
+        <input type="hidden" name="role" value="guest">
+        <button type="submit" class="btn-guest">👁 Войти как гость (только просмотр)</button>
+      </form>
+
+      <button type="button" class="btn-guest" onclick="enterGuest()">👁 Гостевой доступ (без аутентификации)</button>
+
+      <div class="footer-info">
+        Версия ПО: АИИС-РЗА v3.2.1 (сборка 2025.11.14)<br>
+        Сервер: {{ request.host }} | Протокол: IEC 61850 / МЭК 60870-5-104<br>
+        © 2024—2026 ООО «ЭнергоСофт». Все права защищены.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const roleHints = {
+      'admin':    'Полный доступ к управлению и конфигурации',
+      'engineer': 'Доступ к уставкам, конфигурации и управлению',
+      'operator': 'Управление коммутационными аппаратами',
+      'auditor':  'Только просмотр параметров и журналов'
+    };
+
+    function toggleGuestMode(sel) {
+      var hint = document.getElementById('roleHint');
+      hint.textContent = roleHints[sel.value] || '';
+    }
+
+    function enterGuest() {
+      document.getElementById('guestForm').submit();
+    }
+  </script>
+</body>
+</html>

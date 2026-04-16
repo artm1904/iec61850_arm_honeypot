@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang='ru'>
 <head>
-<title>webclient</title>
+<title>АРМ РЗА — Мнемосхема</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="static/css/layout.css" rel="stylesheet" type="text/css"></link>
@@ -18,14 +18,208 @@ if (typeof jQuery == 'undefined') {
 <script type="text/javascript" src="static/lib/tdi.tabs.js"></script>
 <script type="text/javascript" src="static/client.js"></script>
 
-</head>
-<body><!--onload="draw()"-->
+<style>
+  /* Toolbar styling */
+  .toolbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 40px;
+    background: linear-gradient(180deg, #1a2332 0%, #111927 100%);
+    border-bottom: 2px solid #00b9a0;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    z-index: 1000;
+    gap: 2px;
+  }
+  .toolbar-section {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0 6px;
+    border-right: 1px solid #30363d;
+    height: 100%;
+  }
+  .toolbar-section:last-child { border-right: none; }
+  .toolbar-section.right { margin-left: auto; border-right: none; border-left: 1px solid #30363d; }
 
+  .tb-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    color: #8b949e;
+    font-size: 11px;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 3px;
+    white-space: nowrap;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .tb-btn:hover { background: rgba(0,185,160,0.15); color: #fff; border-color: #30363d; }
+  .tb-btn:active { background: rgba(0,185,160,0.3); }
+  .tb-btn.active { background: rgba(0,185,160,0.2); color: #00b9a0; border-color: #00b9a0; }
+  .tb-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .tb-btn:disabled:hover { background: transparent; color: #8b949e; border-color: transparent; }
+
+  .tb-separator { width: 1px; height: 20px; background: #30363d; margin: 0 4px; }
+
+  .tb-label {
+    font-size: 10px;
+    color: #484f58;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 4px;
+  }
+
+  .user-badge {
+    font-size: 10px;
+    color: #00b9a0;
+    background: rgba(0,185,160,0.1);
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid rgba(0,185,160,0.2);
+  }
+
+  .role-badge {
+    font-size: 9px;
+    color: #6e7681;
+    padding: 2px 6px;
+    border-radius: 10px;
+    border: 1px solid #30363d;
+  }
+
+  /* Status bar */
+  .statusbar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 22px;
+    background: #0d1117;
+    border-top: 1px solid #30363d;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    font-size: 10px;
+    color: #484f58;
+    z-index: 1000;
+    gap: 15px;
+  }
+  .statusbar .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #3fb950;
+    display: inline-block;
+    margin-right: 4px;
+  }
+
+  /* Override main layout for toolbar/statusbar */
+  .wrap {
+    padding-top: 44px !important;
+    height: calc(100vh - 22px) !important;
+  }
+
+  /* Modal overlay for oscillogram viewer */
+  .osc-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+  }
+  .osc-overlay.visible { display: flex; }
+  .osc-modal {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    width: 85vw;
+    max-width: 1100px;
+    max-height: 85vh;
+    overflow: auto;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+  }
+  .osc-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: linear-gradient(90deg, #00b9a0, #006d5b);
+    color: #000;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .osc-modal-close {
+    cursor: pointer;
+    font-size: 18px;
+    color: #000;
+    background: none;
+    border: none;
+    font-weight: bold;
+  }
+  .osc-modal-body { padding: 16px; }
+  .osc-file-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 16px 0;
+  }
+  .osc-file-list li {
+    padding: 8px 12px;
+    border: 1px solid #30363d;
+    margin-bottom: 4px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-size: 13px;
+  }
+  .osc-file-list li:hover { background: rgba(0,185,160,0.1); }
+  .osc-file-list li.selected { background: rgba(0,185,160,0.2); border-color: #00b9a0; }
+  .osc-chart-area {
+    min-height: 300px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 3px;
+    position: relative;
+    overflow: hidden;
+  }
+  .osc-chart-area canvas { width: 100%; height: 100%; }
+</style>
+
+</head>
+<body>
+
+<!-- ═══ TOOLBAR ═══ -->
+<div class="toolbar">
+  <div class="toolbar-section">
+    <span class="tb-label">Файл</span>
+    <button class="tb-btn" onclick="simAction('load_config')" {% if not role_info.can_config %}disabled{% endif %}>📂 Загрузить конфигурацию</button>
+    <button class="tb-btn" onclick="simAction('generate_report')">📋 Сформировать отчёт</button>
+  </div>
+  <div class="toolbar-section">
+    <span class="tb-label">Управление</span>
+    <button class="tb-btn" onclick="simAction('start_polling')" {% if not role_info.can_control %}disabled{% endif %}>▶ Начать опрос</button>
+    <button class="tb-btn" onclick="simAction('reinit')" {% if not role_info.can_control %}disabled{% endif %}>🔄 Перезапуск</button>
+    <button class="tb-btn" onclick="simAction('reset_interlocks')" {% if not role_info.can_control %}disabled{% endif %}>🔓 Сброс блокировок</button>
+    <button class="tb-btn" onclick="simAction('sync_time')" {% if not role_info.can_control %}disabled{% endif %}>🕐 Синхронизация времени</button>
+  </div>
+  <div class="toolbar-section">
+    <span class="tb-label">Диагностика</span>
+    <button class="tb-btn" onclick="openOscillogramViewer()">📈 Осциллограммы</button>
+    <button class="tb-btn" onclick="simAction('diagnostic')">🔧 Самодиагностика</button>
+    <button class="tb-btn" onclick="simAction('read_journal')">📖 Журнал событий</button>
+  </div>
+  <div class="toolbar-section right">
+    <span class="user-badge">{{ username }}</span>
+    <span class="role-badge">{{ role_label }}</span>
+    <a href="/logout" class="tb-btn" style="color:#f85149;">⏻ Выход</a>
+  </div>
+</div>
+
+<!-- ═══ MAIN CONTENT ═══ -->
 <main id='main_content'>
 <div class='wrap'>
 
   <div class="column middle">
-    <h2 class='h2 teal'>HMI</h2>	
+    <h2 class='h2 teal'>Мнемосхема</h2>
     <div class='content'>
       <div id="network" class="network">
 	{% if local_svg %}
@@ -34,35 +228,256 @@ if (typeof jQuery == 'undefined') {
         <object data="static/mmi.remote.svg" type="image/svg+xml" id="mmi_svg" width="100%" height="100%"></object>
 	{% endif %}
       </div>
-    </div>	
+    </div>
   </div>
 
   <div class="splitter"></div>
 
   <div class="column rightside" id="hostinfo">
-    <h2 class='h2 teal'>IED</h2>	
+    <h2 class='h2 teal'>Модель данных РЗА</h2>
     <div class='content'>
-      <h3>datamodel</h3>
+      <h3 style="color:#8b949e; font-size:12px; margin-bottom:8px;">Текущие значения IED</h3>
       <pre id="datamodel"></pre>
-    </div>	
+    </div>
   </div>
 
 	<div class="footer" id="hostlog">
 		<!-- Tab Body Start -->
 		<div class="tabcontents" id="hostlogbody">
-			<pre id="localhost"> 
+			<pre id="localhost">
       </pre>
     </div>
-		<!-- Tab Body End --> 
+		<!-- Tab Body End -->
 		<!-- Tab Headers Start -->
 		<ul class="tabs" id="hostlogtab">
-			<li><a data-toggle="tab" id='localhost_tab' href="#localhost">localhost</a></li>
+			<li><a data-toggle="tab" id='localhost_tab' href="#localhost">Системный журнал</a></li>
 		</ul>
-		<!-- Tab Headers End --> 
+		<!-- Tab Headers End -->
 	</div>
 
 </div>
 </main>
+
+<!-- ═══ STATUS BAR ═══ -->
+<div class="statusbar">
+  <span><span class="status-dot"></span>Подключено</span>
+  <span>Протокол: IEC 61850 MMS / GOOSE</span>
+  <span>Сервер: {{ request.host }}</span>
+  <span id="clock"></span>
+  <span style="margin-left:auto;">АИИС-РЗА v3.2.1</span>
+</div>
+
+<!-- ═══ OSCILLOGRAM VIEWER MODAL ═══ -->
+<div class="osc-overlay" id="oscOverlay">
+  <div class="osc-modal">
+    <div class="osc-modal-header">
+      📈 Просмотр осциллограмм (COMTRADE IEC 60255-24)
+      <button class="osc-modal-close" onclick="closeOscillogramViewer()">✕</button>
+    </div>
+    <div class="osc-modal-body">
+      <div style="display:flex; gap:16px;">
+        <div style="flex: 0 0 250px;">
+          <h4 style="color:#00b9a0; margin-bottom:8px; font-size:13px;">Доступные записи:</h4>
+          <ul class="osc-file-list" id="oscFileList">
+            <li style="color:#6e7681; cursor:default;">Загрузка...</li>
+          </ul>
+        </div>
+        <div style="flex:1;">
+          <h4 style="color:#00b9a0; margin-bottom:8px; font-size:13px;">Графики:</h4>
+          <div class="osc-chart-area" id="oscChartArea">
+            <canvas id="oscCanvas"></canvas>
+            <div id="oscPlaceholder" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#484f58;font-size:13px;">
+              Выберите запись слева для отображения
+            </div>
+          </div>
+          <div id="oscChannelInfo" style="margin-top:8px; font-size:11px; color:#6e7681;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    // ── Clock ──
+    function updateClock() {
+      var now = new Date();
+      document.getElementById('clock').textContent = now.toLocaleString('ru-RU');
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ── UI telemetry logger ──
+    function logInteraction(element, action, value) {
+      if (typeof socket !== 'undefined') {
+        socket.emit('ui_interaction', {
+          element: element,
+          action: action,
+          value: value || '',
+          page_url: window.location.href,
+          viewport: window.innerWidth + 'x' + window.innerHeight,
+          ts: new Date().toISOString()
+        });
+      }
+    }
+
+    // Log all button clicks
+    document.addEventListener('click', function(e) {
+      var btn = e.target.closest('button, .tb-btn, .controlBtn, a');
+      if (btn) {
+        logInteraction(btn.textContent.trim().substring(0, 50), 'click', btn.id || btn.className);
+      }
+    });
+
+    // ── Simulation actions ──
+    function simAction(action, filename) {
+      logInteraction('sim_action_' + action, 'command', filename || '');
+
+      if (action === 'load_config') {
+        var input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.cid,.icd,.xml,.cfg';
+        input.onchange = function() {
+          var fn = this.files[0] ? this.files[0].name : '';
+          socket.emit('sim_action', {action: action, filename: fn}, function(data) {
+            showNotification(data.msg || 'Готово', data.status === 'error' ? 'error' : 'success');
+          });
+        };
+        input.click();
+        return;
+      }
+
+      socket.emit('sim_action', {action: action, filename: filename || ''}, function(data) {
+        showNotification(data.msg || 'Готово', data.status === 'error' ? 'error' : 'success');
+      });
+    }
+
+    // ── Notification toast ──
+    function showNotification(msg, type) {
+      var toast = document.createElement('div');
+      toast.style.cssText = 'position:fixed;top:50px;right:20px;z-index:3000;padding:12px 18px;border-radius:4px;font-size:13px;max-width:400px;box-shadow:0 4px 12px rgba(0,0,0,0.5);transition:opacity 0.3s;';
+      toast.style.background = type === 'error' ? 'rgba(248,81,73,0.9)' : 'rgba(0,185,160,0.9)';
+      toast.style.color = type === 'error' ? '#fff' : '#000';
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      setTimeout(function() { toast.style.opacity = '0'; setTimeout(function() { toast.remove(); }, 300); }, 4000);
+    }
+
+    // ── Oscillogram viewer ──
+    function openOscillogramViewer() {
+      logInteraction('oscillogram_viewer', 'open', '');
+      document.getElementById('oscOverlay').classList.add('visible');
+      // Load file list
+      fetch('/api/comtrade/list')
+        .then(function(r) { return r.json(); })
+        .then(function(files) {
+          var list = document.getElementById('oscFileList');
+          if (files.length === 0) {
+            list.innerHTML = '<li style="color:#6e7681;cursor:default;">Нет доступных записей</li>';
+            return;
+          }
+          list.innerHTML = '';
+          files.forEach(function(f) {
+            var li = document.createElement('li');
+            li.textContent = '📄 ' + f.name;
+            li.onclick = function() {
+              document.querySelectorAll('.osc-file-list li').forEach(function(el) { el.classList.remove('selected'); });
+              li.classList.add('selected');
+              loadOscillogram(f.name);
+            };
+            list.appendChild(li);
+          });
+        })
+        .catch(function() {
+          document.getElementById('oscFileList').innerHTML = '<li style="color:#f85149;">Ошибка загрузки</li>';
+        });
+    }
+
+    function closeOscillogramViewer() {
+      document.getElementById('oscOverlay').classList.remove('visible');
+    }
+
+    function loadOscillogram(basename) {
+      logInteraction('oscillogram_load', 'select', basename);
+      document.getElementById('oscPlaceholder').textContent = 'Загрузка...';
+      fetch('/api/comtrade/read/' + basename)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.error) {
+            document.getElementById('oscPlaceholder').textContent = 'Ошибка: ' + data.error;
+            return;
+          }
+          renderOscillogram(data);
+        })
+        .catch(function(e) {
+          document.getElementById('oscPlaceholder').textContent = 'Ошибка: ' + e;
+        });
+    }
+
+    function renderOscillogram(data) {
+      var canvas = document.getElementById('oscCanvas');
+      var ctx = canvas.getContext('2d');
+      var area = document.getElementById('oscChartArea');
+      canvas.width = area.clientWidth;
+      canvas.height = Math.max(300, data.channels.length * 120);
+      document.getElementById('oscPlaceholder').style.display = 'none';
+
+      var colors = ['#00b9a0', '#f0883e', '#bc8cff', '#f85149', '#79c0ff', '#3fb950', '#e3b341', '#a5d6ff'];
+      var channelHeight = canvas.height / data.channels.length;
+
+      ctx.fillStyle = '#0d1117';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      data.channels.forEach(function(ch, ci) {
+        var yBase = ci * channelHeight;
+        var yMid = yBase + channelHeight / 2;
+
+        // Grid line
+        ctx.strokeStyle = '#21262d';
+        ctx.beginPath();
+        ctx.moveTo(0, yBase + channelHeight);
+        ctx.lineTo(canvas.width, yBase + channelHeight);
+        ctx.stroke();
+
+        // Label
+        ctx.fillStyle = colors[ci % colors.length];
+        ctx.font = '11px Roboto, sans-serif';
+        ctx.fillText(ch.name + (ch.unit ? ' (' + ch.unit + ')' : ''), 5, yBase + 14);
+
+        // Find data range
+        var minV = Infinity, maxV = -Infinity;
+        ch.data.forEach(function(v) { if (v < minV) minV = v; if (v > maxV) maxV = v; });
+        var range = maxV - minV || 1;
+
+        // Draw waveform
+        ctx.strokeStyle = colors[ci % colors.length];
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ch.data.forEach(function(v, i) {
+          var x = (i / ch.data.length) * canvas.width;
+          var y = yBase + channelHeight - 20 - ((v - minV) / range) * (channelHeight - 30);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+
+        // Min/max labels
+        ctx.fillStyle = '#484f58';
+        ctx.font = '9px monospace';
+        ctx.fillText(maxV.toFixed(2), canvas.width - 60, yBase + 14);
+        ctx.fillText(minV.toFixed(2), canvas.width - 60, yBase + channelHeight - 6);
+      });
+
+      // Channel info
+      var info = data.channels.map(function(ch) {
+        return ch.name + (ch.unit ? ' (' + ch.unit + ')' : '') + ': ' + ch.data.length + ' отсчётов';
+      }).join(' | ');
+      document.getElementById('oscChannelInfo').textContent = info;
+    }
+
+    // Close modal on Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeOscillogramViewer();
+    });
+</script>
 </body>
 </html>
-
