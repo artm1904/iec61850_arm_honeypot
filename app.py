@@ -286,6 +286,277 @@ def comtrade_read(basename):
         return jsonify({'error': str(e)}), 500
 
 
+# ─── Devices & Terminal Configuration API ───────────────────────────────────
+@app.route('/api/devices', methods=['GET'])
+@login_required
+def api_devices():
+    """Return list of all devices from static catalog."""
+    data_path = os.path.join(app.static_folder, 'data', 'devices.json')
+    log_honeypot_action('devices_list', username=session.get('username','?'), ip=request.remote_addr)
+    try:
+        with open(data_path, 'r', encoding='utf-8') as f:
+            return jsonify(json.load(f))
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/devices/<device_id>/config', methods=['GET', 'POST'])
+@login_required
+def api_device_config(device_id):
+    """Get or update device terminal configuration."""
+    data_path = os.path.join(app.static_folder, 'data', 'devices.json')
+    log_honeypot_action('device_config', details={'device': device_id, 'method': request.method},
+                        username=session.get('username','?'), ip=request.remote_addr)
+    try:
+        with open(data_path, 'r', encoding='utf-8') as f:
+            catalog = json.load(f)
+        for dev in catalog.get('devices', []):
+            if dev['id'] == device_id:
+                if request.method == 'POST':
+                    update = request.get_json(silent=True) or {}
+                    log_honeypot_action('device_config_update', details={'device': device_id, 'update': update},
+                                        username=session.get('username','?'), ip=request.remote_addr)
+                    return jsonify({'status': 'ok', 'msg': f'Конфигурация {device_id} обновлена.'})
+                return jsonify(dev)
+        return jsonify({'error': 'Устройство не найдено'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ─── Protection Settings (Уставки) API ─────────────────────────────────────
+settings_change_journal = []  # in-memory journal of changes
+
+@app.route('/api/settings/<device_id>', methods=['GET'])
+@login_required
+def api_settings_get(device_id):
+    """Return settings groups for a device."""
+    fname = f'settings_{device_id}.json'
+    fpath = os.path.join(app.static_folder, 'data', fname)
+    log_honeypot_action('settings_read', details={'device': device_id},
+                        username=session.get('username','?'), ip=request.remote_addr)
+    if not os.path.exists(fpath):
+        return jsonify({'error': f'Файл уставок {fname} не найден'}), 404
+    with open(fpath, 'r', encoding='utf-8') as f:
+        return jsonify(json.load(f))
+
+@app.route('/api/settings/<device_id>/save', methods=['POST'])
+@login_required
+@role_required('can_config')
+def api_settings_save(device_id):
+    """Save updated settings to file."""
+    fname = f'settings_{device_id}.json'
+    fpath = os.path.join(app.static_folder, 'data', fname)
+    new_data = request.get_json(silent=True)
+    log_honeypot_action('settings_write', details={'device': device_id, 'data': new_data},
+                        username=session.get('username','?'), ip=request.remote_addr)
+    if new_data:
+        try:
+            with open(fpath, 'w', encoding='utf-8') as f:
+                json.dump(new_data, f, ensure_ascii=False, indent=2)
+            # Record in change journal
+            settings_change_journal.append({
+                'timestamp': datetime.utcnow().isoformat() + 'Z',
+                'user': session.get('username','?'),
+                'device': device_id,
+                'action': 'settings_save',
+                'ip': request.remote_addr
+            })
+            return jsonify({'status': 'ok', 'msg': f'Уставки {device_id} сохранены.'})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    return jsonify({'error': 'Нет данных'}), 400
+
+@app.route('/api/settings/<device_id>/export', methods=['GET'])
+@login_required
+def api_settings_export(device_id):
+    """Export settings as downloadable JSON file."""
+    fname = f'settings_{device_id}.json'
+    fpath = os.path.join(app.static_folder, 'data', fname)
+    log_honeypot_action('settings_export', details={'device': device_id},
+                        username=session.get('username','?'), ip=request.remote_addr)
+    if os.path.exists(fpath):
+        return send_file(fpath, as_attachment=True, download_name=fname, mimetype='application/json')
+    return jsonify({'error': 'Файл не найден'}), 404
+
+@app.route('/api/settings/journal', methods=['GET'])
+@login_required
+def api_settings_journal():
+    """Return the settings change journal."""
+    log_honeypot_action('settings_journal_view', username=session.get('username','?'), ip=request.remote_addr)
+    return jsonify(settings_change_journal)
+
+@app.route('/api/settings/compare', methods=['POST'])
+@login_required
+def api_settings_compare():
+    """Compare two settings groups."""
+    data = request.get_json(silent=True) or {}
+    log_honeypot_action('settings_compare', details=data,
+                        username=session.get('username','?'), ip=request.remote_addr)
+    group_a = data.get('group_a', [])
+    group_b = data.get('group_b', [])
+    diffs = []
+    a_map = {s['id']: s for s in group_a}
+    b_map = {s['id']: s for s in group_b}
+    all_ids = set(list(a_map.keys()) + list(b_map.keys()))
+    for sid in sorted(all_ids):
+        a = a_map.get(sid)
+        b = b_map.get(sid)
+        if a and b:
+            if str(a.get('value')) != str(b.get('value')):
+                diffs.append({'id': sid, 'name': a.get('name',''), 'value_a': a['value'], 'value_b': b['value'], 'status': 'modified'})
+        elif a:
+            diffs.append({'id': sid, 'name': a.get('name',''), 'value_a': a['value'], 'value_b': '—', 'status': 'removed'})
+        else:
+            diffs.append({'id': sid, 'name': b.get('name',''), 'value_a': '—', 'value_b': b['value'], 'status': 'added'})
+    return jsonify(diffs)
+
+
+# ─── Event Journal API ─────────────────────────────────────────────────────
+import random as _rnd
+
+def _generate_events():
+    """Generate a realistic list of SCADA journal events."""
+    event_types = [
+        ("КА", "В-10 кВ Яч.{cell} Выключатель включён", "Положение КА", "РПТ-{r}", "green"),
+        ("КА", "В-10 кВ Яч.{cell} Выключатель отключён", "Положение КА", "РПТ-{r}", "red"),
+        ("ПИ", "Яч. {cell} Рекл.Мер №{rec} Неисправность модуля управления выключателем уцло", "ЭНКС-3м РПТ-{r}", "РПТ-{r}", "yellow"),
+        ("КА", "В3-10 кВ Яч.{cell} Рекл. №{rec} в неопределённом положении", "Положение КА", "РПТ-{r}", "red"),
+        ("И", "РПТ Яч.{cell} Запись осциллографа сохранена", "ЭНКС-3м РПТ-{r}", "РПТ-{r}", "blue"),
+        ("КА", "ЛР-10 кВ Яч.{cell} Рекл.Мер №{rec} включён", "Положение КА", "РПТ-{r}", "green"),
+        ("П1", "Яч. {cell} Рекл.Мер №{rec} Пуск МТЗ", "ЭНКС-3м РПТ-{r}", "РПТ-{r}", "yellow"),
+        ("КА", "ТС Опроса БМРЗ Яч.{cell} Рекл.Мер №{rec}", "Положение КА", "РПТ-{r}", "blue"),
+        ("[Р8]", "Яч. {cell} Рекл.Мер №{rec} Неисправность модуля управления выключателем", "ЭНКС-3м РПТ-{r}", "РПТ-{r}", "red"),
+        ("А", "Яч. {cell} Рекл.Мер №{rec} Перегруз фазы A", "ЭНКС-3м РПТ-{r}", "РПТ-{r}", "orange"),
+        ("КА", "SH-10 кВ Рекл.Мер №{rec} отключён", "Положение КА", "РПТ-{r}", "red"),
+        ("П2", "Яч. {cell} ТС Срабатывание ТЗНП", "ЭНКС-3м РПТ-{r}", "РПТ-{r}", "red"),
+        ("И", "Синхронизация времени PTP выполнена", "Сервер NTP", "РПТ-3", "blue"),
+        ("КА", "В-10 кВ КК-2 включён", "Положение КА", "КК-2 Яч.{cell}", "green"),
+    ]
+    base = datetime(2026, 4, 17, 18, 0, 0)
+    events = []
+    for i in range(150):
+        delta_sec = i * _rnd.uniform(1, 45)
+        ts = base.timestamp() + delta_sec
+        t = event_types[i % len(event_types)]
+        cell = _rnd.choice([1,2,3,4,5,10,20,27])
+        rec = _rnd.choice([1,2])
+        r = _rnd.choice([1,2,3])
+        text = t[1].format(cell=cell, rec=rec, r=r)
+        events.append({
+            'id': i+1,
+            'timestamp': time.strftime("%Y.%m.%d %H:%M:%S.{ms}".format(ms=str(_rnd.randint(0,999)).zfill(3)), time.localtime(ts)),
+            'type': t[0],
+            'text': text,
+            'value': round(_rnd.uniform(0.5, 50), 3) if t[0] in ('КА','А') else '',
+            'source': t[2].format(cell=cell, rec=rec, r=r),
+            'severity': t[4],
+            'device': t[3].format(cell=cell, rec=rec, r=r),
+            'received': time.strftime("%Y.%m.%d %H:%M:%S.{ms}".format(ms=str(_rnd.randint(0,999)).zfill(3)), time.localtime(ts + _rnd.uniform(0.001, 0.5))),
+        })
+    return events
+
+_cached_events = None
+
+@app.route('/api/events', methods=['GET'])
+@login_required
+def api_events():
+    """Return the event journal."""
+    global _cached_events
+    if _cached_events is None:
+        _cached_events = _generate_events()
+    log_honeypot_action('event_journal_view', details={'count': len(_cached_events)},
+                        username=session.get('username','?'), ip=request.remote_addr)
+    return jsonify(_cached_events)
+
+
+# ─── Communication Diagnostics API ─────────────────────────────────────────
+@app.route('/api/diagnostics/<device_id>', methods=['GET'])
+@login_required
+def api_diagnostics(device_id):
+    """Simulate a communication diagnostic check for a device."""
+    log_honeypot_action('diagnostics_run', details={'device': device_id},
+                        username=session.get('username','?'), ip=request.remote_addr)
+    # Find device info
+    data_path = os.path.join(app.static_folder, 'data', 'devices.json')
+    try:
+        with open(data_path, 'r', encoding='utf-8') as f:
+            catalog = json.load(f)
+    except:
+        catalog = {'devices': []}
+    dev = None
+    for d in catalog.get('devices', []):
+        if d['id'] == device_id:
+            dev = d
+            break
+    if not dev:
+        return jsonify({'error': 'Устройство не найдено'}), 404
+
+    import random
+    latency = round(random.uniform(0.5, 15.0), 2)
+    results = {
+        'device': device_id,
+        'ip': dev.get('ip', '?'),
+        'port': dev.get('port', 102),
+        'ping_ms': latency,
+        'status': 'OK' if latency < 50 else 'TIMEOUT',
+        'mms_association': 'Установлена' if random.random() > 0.1 else 'Ошибка',
+        'goose_rx': random.randint(1000, 50000),
+        'goose_lost': random.randint(0, 5),
+        'sv_rx': random.randint(0, 200000) if dev.get('terminal_config', {}).get('protocols', {}).get('sv', {}).get('enabled') else 0,
+        'last_report_age_s': round(random.uniform(0.1, 5.0), 2),
+        'firmware': dev.get('firmware', '?'),
+        'uptime_hours': random.randint(24, 8760),
+        'cpu_load_pct': random.randint(5, 45),
+        'ram_used_mb': random.randint(32, 128),
+        'flash_free_pct': random.randint(40, 95),
+    }
+    return jsonify(results)
+
+
+# ─── COMTRADE file management per device ────────────────────────────────────
+@app.route('/api/comtrade/device/<device_id>', methods=['GET'])
+@login_required
+def comtrade_by_device(device_id):
+    """List COMTRADE files available for a specific device."""
+    comtrade_dir = os.path.join(app.static_folder, 'comtrade')
+    log_honeypot_action('comtrade_device_list', details={'device': device_id},
+                        username=session.get('username','?'), ip=request.remote_addr)
+    files = []
+    if os.path.isdir(comtrade_dir):
+        for fn in sorted(os.listdir(comtrade_dir)):
+            if fn.lower().endswith('.cfg'):
+                base = fn[:-4]
+                dat = base + '.dat'
+                if os.path.exists(os.path.join(comtrade_dir, dat)):
+                    files.append({'name': base, 'cfg': fn, 'dat': dat, 'device': device_id})
+    return jsonify(files)
+
+@app.route('/api/comtrade/delete/<basename>', methods=['DELETE'])
+@login_required
+@role_required('can_config')
+def comtrade_delete(basename):
+    """Delete a COMTRADE file pair."""
+    comtrade_dir = os.path.join(app.static_folder, 'comtrade')
+    log_honeypot_action('comtrade_delete', details={'file': basename},
+                        username=session.get('username','?'), ip=request.remote_addr)
+    cfg = os.path.join(comtrade_dir, secure_filename(basename + '.cfg'))
+    dat = os.path.join(comtrade_dir, secure_filename(basename + '.dat'))
+    deleted = []
+    for p in (cfg, dat):
+        if os.path.exists(p):
+            os.remove(p)
+            deleted.append(os.path.basename(p))
+    return jsonify({'status': 'ok', 'deleted': deleted})
+
+@app.route('/api/comtrade/trigger/<device_id>', methods=['POST'])
+@login_required
+@role_required('can_control')
+def comtrade_trigger(device_id):
+    """Manually trigger oscillograph on a device (honeypot stub)."""
+    log_honeypot_action('oscillograph_manual_trigger', details={'device': device_id},
+                        username=session.get('username','?'), ip=request.remote_addr)
+    return jsonify({'status': 'ok', 'msg': f'Ручной пуск осциллографа {device_id} выполнен. Ожидание записи...'})
+
+
 # ─── Proxy to simulator API ────────────────────────────────────────────────
 @app.route('/api/sim/<action>', methods=['GET'])
 @login_required
