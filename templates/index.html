@@ -38,13 +38,14 @@
 .modal-close{cursor:pointer;font-size:18px;color:#000;background:0 0;border:none;font-weight:700}
 .modal-body{padding:14px;overflow:auto;flex:1}
 
-/* ═══ DATA TREE ═══ */
-.tree ul{list-style:none;padding-left:16px;margin:0}
-.tree li{font-size:12px;line-height:20px;color:#c9d1d9}
-.tree .node-toggle{cursor:pointer;color:#00b9a0;margin-right:4px;font-weight:700;user-select:none}
-.tree .node-toggle:hover{color:#fff}
-.tree .leaf-value{color:#79c0ff;margin-left:8px;font-family:monospace;font-size:11px}
-.tree .collapsed>ul{display:none}
+/* ═══ DATA MODEL TABLE ═══ */
+#datamodel{overflow:auto;font-size:11px}
+#datamodel table,#CurrentIEDModel{width:100%;border-collapse:collapse;font-size:11px}
+#datamodel table tr,#CurrentIEDModel tr{cursor:pointer;transition:background .1s}
+#datamodel table tr:hover,#CurrentIEDModel tr:hover{background:rgba(0,185,160,.12)}
+#datamodel table td,#CurrentIEDModel td{padding:3px 6px;border-bottom:1px solid #21262d;color:#c9d1d9;font-family:monospace;font-size:11px;white-space:nowrap}
+#datamodel table td:first-child,#CurrentIEDModel td:first-child{color:#00b9a0}
+#datamodel table td:nth-child(2),#CurrentIEDModel td:nth-child(2){color:#79c0ff}
 
 /* ═══ EVENT TABLE ═══ */
 .ev-table{width:100%;border-collapse:collapse;font-size:11px}
@@ -159,7 +160,7 @@
   <div class="column rightside" id="hostinfo">
     <h2 class='h2 teal'>Модель данных РЗА</h2>
     <div class='content'>
-      <div id="datamodel" class="tree"></div>
+      <div id="datamodel"></div>
     </div>
   </div>
   <div class="footer" id="hostlog">
@@ -440,58 +441,7 @@ function renderEvents(list){
   document.getElementById('evBody').innerHTML=html;
 }
 
-/* ═══ INTERACTIVE DATA TREE ═══ */
-function renderDataTree(html){
-  // Parse the table HTML into an interactive tree
-  var dm=document.getElementById('datamodel');
-  // If it's raw HTML table from legacy, wrap it
-  if(html && html.indexOf('<table')>=0){
-    // Parse rows into tree structure
-    var temp=document.createElement('div');temp.innerHTML=html;
-    var rows=temp.querySelectorAll('tr');
-    var tree={};
-    rows.forEach(function(row){
-      var cells=row.querySelectorAll('td');
-      if(cells.length<2)return;
-      var ref=cells[0].textContent.replace(/\[.*?\]\s*/,'').trim();
-      var val=cells[1].textContent.trim();
-      var parts=ref.split(/[\/\.]/);
-      var node=tree;
-      parts.forEach(function(p,i){
-        if(!node[p])node[p]={};
-        if(i===parts.length-1)node[p].__value=val;
-        else node[p]=node[p];
-        node=node[p];
-      });
-    });
-    dm.innerHTML=buildTreeHTML(tree,'');
-    // Add click handlers
-    dm.querySelectorAll('.node-toggle').forEach(function(t){
-      t.addEventListener('click',function(){this.parentElement.classList.toggle('collapsed');this.textContent=this.parentElement.classList.contains('collapsed')?'▶':'▼'});
-    });
-  } else {
-    dm.innerHTML='<pre style="font-size:11px;color:#6e7681">'+html+'</pre>';
-  }
-}
-function buildTreeHTML(obj,path){
-  var html='<ul>';
-  for(var key in obj){
-    if(key==='__value')continue;
-    var val=obj[key];
-    var hasChildren=Object.keys(val).filter(function(k){return k!=='__value'}).length>0;
-    var leafVal=val.__value;
-    if(hasChildren){
-      html+='<li><span class="node-toggle">▼</span><strong>'+key+'</strong>';
-      if(leafVal) html+='<span class="leaf-value">= '+leafVal+'</span>';
-      html+=buildTreeHTML(val,path+'/'+key)+'</li>';
-    } else if(leafVal!==undefined){
-      html+='<li style="padding-left:14px">'+key+'<span class="leaf-value">= '+leafVal+'</span></li>';
-    } else {
-      html+='<li><span class="node-toggle">▼</span>'+key+buildTreeHTML(val,path+'/'+key)+'</li>';
-    }
-  }
-  return html+'</ul>';
-}
+/* Data model rendering handled by client.js info_event → writeValueModel */
 
 /* ═══ SETTINGS ═══ */
 function loadSettings(){
@@ -704,12 +654,7 @@ function exportTermConfig(){if(_tcData){var b=new Blob([JSON.stringify(_tcData,n
 function importTermConfig(){var i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=function(){showNotification('Конфигурация загружена (предпросмотр)','success')};i.click()}
 function setTestMode(){if(confirm('Перевести терминал в режим тестирования? Все защиты будут заблокированы!')){simAction('diagnostic');showNotification('Терминал переведён в режим тестирования','success')}}
 
-/* ═══ OVERRIDE info_event for tree rendering ═══ */
-$(document).ready(function(){
-  if(typeof socket!=='undefined'){
-    socket.on('info_event',function(data){renderDataTree(data)});
-  }
-});
+/* Data model is handled natively by client.js info_event handler */
 
 /* ═══ LIVE CHARTS ═══ */
 var _liveTimer=null;

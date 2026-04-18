@@ -346,6 +346,17 @@ function svg_load(mmi){
       if(cl == "EXT"){
         el.onclick = extLink;
       }
+      // Make non-IED breakers/disconnectors interactive (local toggle only)
+      if((cl == "XCBR" || cl == "XSWI") && !el.id.startsWith("iec61850://") && !el.id.startsWith("iec60870://")){
+        svgElementData[el.id || ('_local_' + idx)] = { position: true };
+        el.onclick = localToggleBreaker;
+        el.style.cursor = 'pointer';
+      }
+      if(cl == "CSWI" && !el.id.startsWith("iec61850://") && !el.id.startsWith("iec60870://")){
+        svgElementData[el.id || ('_local_cswi_' + idx)] = { position: true };
+        el.onclick = localToggleBreaker;
+        el.style.cursor = 'pointer';
+      }
     }
   });
   socket.emit('register_datapoint_finished', '');
