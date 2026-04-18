@@ -591,6 +591,50 @@ def sim_proxy(action):
         return jsonify({'status': 'error', 'msg': f'Ошибка связи с симулятором: {str(e)}'})
 
 
+# ─── Real-time plot data proxy ─────────────────────────────────────────────
+@app.route('/api/plot_data', methods=['GET'])
+@login_required
+def plot_data_proxy():
+    """Proxy real-time simulation data for live charts."""
+    tail = request.args.get('tail', '500')
+    log_honeypot_action('plot_data_fetch', details={'tail': tail},
+                        username=session.get('username','?'), ip=request.remote_addr)
+    try:
+        resp = requests.get(f"{SIMULATOR_URL}/plot_data?tail={tail}", timeout=10)
+        return jsonify(resp.json())
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
+
+# ─── Grounding knife / Node modification proxy ─────────────────────────────
+@app.route('/api/sim_node', methods=['GET', 'POST'])
+@login_required
+@role_required('can_control')
+def sim_node_proxy():
+    """Proxy for reading/writing simulation node values (grounding knife etc.)."""
+    ip = request.remote_addr
+    username = session.get('username', '?')
+    if request.method == 'POST':
+        data = request.get_json(silent=True) or {}
+        log_honeypot_action('sim_node_modify', details={
+            'node': data.get('node',''), 'value': data.get('value','')
+        }, username=username, ip=ip)
+        try:
+            resp = requests.post(f"{SIMULATOR_URL}/simulation_node_api",
+                json=data, timeout=10)
+            return jsonify(resp.json())
+        except Exception as e:
+            return jsonify({'error': str(e)})
+    else:
+        node = request.args.get('node', '')
+        log_honeypot_action('sim_node_read', details={'node': node}, username=username, ip=ip)
+        try:
+            resp = requests.get(f"{SIMULATOR_URL}/simulation_node_api?node={node}", timeout=10)
+            return jsonify(resp.json())
+        except Exception as e:
+            return jsonify({'error': str(e)})
+
+
 # ─── SocketIO simulation action handler ─────────────────────────────────────
 @socketio.on('sim_action', namespace='')
 def sim_action(data):

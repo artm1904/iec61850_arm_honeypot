@@ -116,8 +116,18 @@
     <button class="tb-btn" onclick="simAction('sync_time')" {% if not role_info.can_control %}disabled{% endif %}>🕐 Время</button>
   </div>
   <div class="toolbar-section">
+    <span class="tb-label">Графики</span>
+    <button class="tb-btn" onclick="openModal('liveCharts')">📊 Токи (живой)</button>
+    <button class="tb-btn" onclick="openModal('liveCharts');switchLiveTab(1)">⚡ Напряжения</button>
+  </div>
+  <div class="toolbar-section">
+    <span class="tb-label">Нагрузка</span>
+    <button class="tb-btn red" style="color:#f85149" onclick="groundingKnifeConnect()" {% if not role_info.can_control %}disabled{% endif %}>🔻 ЗН: Включить</button>
+    <button class="tb-btn green" style="color:#3fb950" onclick="groundingKnifeDisconnect()" {% if not role_info.can_control %}disabled{% endif %}>🔺 ЗН: Отключить</button>
+  </div>
+  <div class="toolbar-section">
     <span class="tb-label">Модули</span>
-    <button class="tb-btn" onclick="openModal('eventJournal')">📖 Журнал событий</button>
+    <button class="tb-btn" onclick="openModal('eventJournal')">📖 Журнал</button>
     <button class="tb-btn" onclick="openModal('settings')">⚙ Уставки</button>
     <button class="tb-btn" onclick="openModal('oscillograms')">📈 Осциллограммы</button>
     <button class="tb-btn" onclick="openModal('diagnostics')">🔧 Диагностика</button>
@@ -169,6 +179,60 @@
   <span id="clock"></span>
   <span style="margin-left:auto">АИИС-РЗА v3.2.1</span>
 </div>
+
+<!-- ═══════════════════ MODAL: LIVE CHARTS ═══════════════════ -->
+<div class="modal-overlay" id="modal_liveCharts">
+<div class="modal-box" style="max-width:1100px">
+  <div class="modal-header">📊 Мгновенные графики тока и напряжения <button class="modal-close" onclick="closeLiveCharts()">✕</button></div>
+  <div class="modal-body">
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+      <div class="mtabs" id="liveTabs" style="margin-bottom:0;border-bottom:none">
+        <div class="mtab active" onclick="switchLiveTab(0)">⚡ Токи (I)</div>
+        <div class="mtab" onclick="switchLiveTab(1)">🔌 Напряжения (U)</div>
+        <div class="mtab" onclick="switchLiveTab(2)">⚡+🔌 Совмещённый</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+        <label style="font-size:11px;color:#8b949e">Отсчётов:</label>
+        <select class="dev-select" id="liveTail" style="padding:3px 6px;font-size:11px">
+          <option value="100">100</option><option value="250">250</option><option value="500" selected>500</option><option value="1000">1000</option><option value="2000">2000</option>
+        </select>
+        <label style="font-size:11px;color:#8b949e">Обновл. (мс):</label>
+        <select class="dev-select" id="liveInterval" style="padding:3px 6px;font-size:11px" onchange="resetLiveInterval()">
+          <option value="500">500</option><option value="1000" selected>1000</option><option value="2000">2000</option><option value="5000">5000</option>
+        </select>
+        <button class="mini-btn green" onclick="toggleLiveUpdate()" id="liveToggle">▶ Старт</button>
+        <button class="mini-btn" onclick="fetchLiveData()">Однократно</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <div style="flex:0 0 140px;max-height:450px;overflow:auto" id="liveChannels"></div>
+      <div style="flex:1">
+        <canvas id="liveCanvas" style="width:100%;border:1px solid #30363d;border-radius:3px;background:#0d1117"></canvas>
+        <div id="liveInfo" style="font-size:10px;color:#6e7681;margin-top:4px"></div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- ═══ GROUNDING KNIFE WARNING OVERLAY ═══ -->
+<div class="modal-overlay" id="modal_groundWarn">
+<div class="modal-box" style="max-width:550px">
+  <div class="modal-header" style="background:linear-gradient(90deg,#f85149,#da3633)">⚠ ОПАСНЫЙ РЕЖИМ РАБОТЫ</div>
+  <div class="modal-body" style="text-align:center;padding:24px">
+    <div style="font-size:48px;margin-bottom:12px">⚡</div>
+    <h3 style="color:#f85149;margin-bottom:12px">Включение заземляющих ножей!</h3>
+    <p style="color:#c9d1d9;font-size:13px;line-height:1.6;margin-bottom:16px">
+      Подключение заземляющих ножей приведёт к <strong style="color:#f85149">короткому замыканию</strong> на нагрузке.<br>
+      Сопротивление нагрузки будет снижено до <strong>1 Ом</strong> (с 550 Ом).<br>
+      Возможны токи КЗ многократно превышающие номинальные.<br><br>
+      <strong>Убедитесь, что релейная защита находится в рабочем режиме.</strong>
+    </p>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <button class="mini-btn red" style="padding:10px 24px;font-size:14px" onclick="confirmGroundConnect()">⚡ Подтвердить включение ЗН</button>
+      <button class="mini-btn" style="padding:10px 24px;font-size:14px" onclick="closeModal('groundWarn')">Отмена</button>
+    </div>
+  </div>
+</div></div>
 
 <!-- ═══════════════════ MODAL: EVENT JOURNAL ═══════════════════ -->
 <div class="modal-overlay" id="modal_eventJournal">
@@ -646,6 +710,133 @@ $(document).ready(function(){
     socket.on('info_event',function(data){renderDataTree(data)});
   }
 });
+
+/* ═══ LIVE CHARTS ═══ */
+var _liveTimer=null;
+var _liveRunning=false;
+var _liveTab=0;
+var _liveData=null;
+var _liveChannelVis={};
+
+function switchLiveTab(n){
+  _liveTab=n;
+  document.querySelectorAll('#liveTabs .mtab').forEach(function(t,i){t.classList.toggle('active',i===n)});
+  if(_liveData) renderLiveChart();
+}
+function openLiveCharts(){openModal('liveCharts')}
+function closeLiveCharts(){closeModal('liveCharts');stopLiveUpdate()}
+function toggleLiveUpdate(){
+  if(_liveRunning){stopLiveUpdate()}else{startLiveUpdate()}
+}
+function startLiveUpdate(){
+  _liveRunning=true;
+  document.getElementById('liveToggle').textContent='⏹ Стоп';
+  document.getElementById('liveToggle').classList.remove('green');document.getElementById('liveToggle').classList.add('red');
+  var iv=parseInt(document.getElementById('liveInterval').value)||1000;
+  fetchLiveData();
+  _liveTimer=setInterval(fetchLiveData,iv);
+}
+function stopLiveUpdate(){
+  _liveRunning=false;
+  document.getElementById('liveToggle').textContent='▶ Старт';
+  document.getElementById('liveToggle').classList.add('green');document.getElementById('liveToggle').classList.remove('red');
+  if(_liveTimer){clearInterval(_liveTimer);_liveTimer=null}
+}
+function resetLiveInterval(){if(_liveRunning){stopLiveUpdate();startLiveUpdate()}}
+function fetchLiveData(){
+  var tail=document.getElementById('liveTail').value;
+  fetch('/api/plot_data?tail='+tail).then(function(r){return r.json()}).then(function(d){
+    if(d.error){showNotification('Симулятор: '+d.error,'error');return}
+    _liveData=d;
+    buildChannelList();
+    renderLiveChart();
+  }).catch(function(e){showNotification('Plot data error: '+e,'error')});
+}
+function buildChannelList(){
+  if(!_liveData)return;
+  var el=document.getElementById('liveChannels');
+  var html='<div style="font-size:10px;color:#8b949e;margin-bottom:6px">Каналы:</div>';
+  var colors=['#00b9a0','#f0883e','#bc8cff','#f85149','#79c0ff','#3fb950','#e3b341','#a5d6ff'];
+  var all=(_liveData.keys_A||[]).concat(_liveData.keys_V||[]);
+  all.forEach(function(k,i){
+    if(_liveChannelVis[k]===undefined)_liveChannelVis[k]=true;
+    var c=colors[i%colors.length];
+    var short=k.replace(/v\.x|_ctr\.vctr|xs12_/g,'').substring(0,20);
+    var chk=_liveChannelVis[k]?'checked':'';
+    html+='<label style="display:flex;align-items:center;gap:4px;font-size:10px;cursor:pointer;margin-bottom:3px;color:'+c+'">';
+    html+='<input type="checkbox" '+chk+' onchange="_liveChannelVis[\''+k+'\']=this.checked;renderLiveChart()" style="accent-color:'+c+'"> '+short+'</label>';
+  });
+  el.innerHTML=html;
+}
+function renderLiveChart(){
+  var canvas=document.getElementById('liveCanvas');
+  var ctx=canvas.getContext('2d');
+  var w=canvas.parentElement.clientWidth;canvas.width=w;canvas.height=380;
+  ctx.fillStyle='#0d1117';ctx.fillRect(0,0,w,380);
+  var colors=['#00b9a0','#f0883e','#bc8cff','#f85149','#79c0ff','#3fb950','#e3b341','#a5d6ff'];
+  // Collect visible channels
+  var channels=[];
+  if(_liveTab===0||_liveTab===2){
+    var keys=_liveData.keys_A||[];var ci=0;
+    keys.forEach(function(k){if(_liveChannelVis[k]!==false){channels.push({key:k,data:_liveData.currents[k],color:colors[ci%colors.length],type:'I'});ci++}});
+  }
+  if(_liveTab===1||_liveTab===2){
+    var keys=_liveData.keys_V||[];var ci=channels.length;
+    keys.forEach(function(k){if(_liveChannelVis[k]!==false){channels.push({key:k,data:_liveData.voltages[k],color:colors[ci%colors.length],type:'U'});ci++}});
+  }
+  if(!channels.length){ctx.fillStyle='#484f58';ctx.font='13px sans-serif';ctx.fillText('Нет данных (запустите опрос)',w/2-80,190);return}
+  // Find global min/max to auto-scale
+  var gMin=Infinity,gMax=-Infinity;
+  channels.forEach(function(ch){ch.data.forEach(function(v){if(v<gMin)gMin=v;if(v>gMax)gMax=v})});
+  var range=gMax-gMin||1;
+  var pad=20;
+  // Grid lines
+  ctx.strokeStyle='#21262d';ctx.lineWidth=0.5;
+  for(var gy=0;gy<5;gy++){var yy=pad+(380-2*pad)*gy/4;ctx.beginPath();ctx.moveTo(40,yy);ctx.lineTo(w,yy);ctx.stroke();
+    ctx.fillStyle='#484f58';ctx.font='9px monospace';ctx.fillText((gMax-range*gy/4).toFixed(1),0,yy+3)}
+  // Waveforms
+  channels.forEach(function(ch){
+    ctx.strokeStyle=ch.color;ctx.lineWidth=1.3;ctx.beginPath();
+    ch.data.forEach(function(v,i){var x=40+(i/(ch.data.length-1||1))*(w-50);var y=pad+((gMax-v)/range)*(380-2*pad);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});
+    ctx.stroke();
+  });
+  // Legend
+  var lx=50;
+  channels.forEach(function(ch){
+    ctx.fillStyle=ch.color;ctx.font='10px sans-serif';
+    var label=ch.key.replace(/v\.x|_ctr\.vctr|xs12_/g,'').substring(0,15)+' ('+ch.type+')';
+    ctx.fillText('■ '+label,lx,380-4);lx+=ctx.measureText('■ '+label).width+12;
+  });
+  document.getElementById('liveInfo').textContent='Шагов: '+(_liveData.steps||0)+' | Каналов I: '+(_liveData.keys_A||[]).length+' | Каналов U: '+(_liveData.keys_V||[]).length;
+}
+
+/* ═══ GROUNDING KNIFE ═══ */
+var GROUND_NODE='@r.xs12_e1_w1_bb1_load.r1[r]';
+var GROUND_NORMAL='5.500000e+02';
+var GROUND_SHORT='1';
+
+function groundingKnifeConnect(){
+  logInteraction('grounding_knife','warn_dialog','');
+  openModal('groundWarn');
+}
+function confirmGroundConnect(){
+  closeModal('groundWarn');
+  logInteraction('grounding_knife','connect',GROUND_SHORT);
+  fetch('/api/sim_node',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({node:GROUND_NODE,value:GROUND_SHORT})})
+    .then(function(r){return r.json()}).then(function(d){
+      if(d.error){showNotification('Ошибка: '+d.error,'error');return}
+      showNotification('⚡ ЗАЗЕМЛЯЮЩИЕ НОЖИ ВКЛЮЧЕНЫ! Режим КЗ на нагрузке. Rн = 1 Ом','error');
+    });
+}
+function groundingKnifeDisconnect(){
+  logInteraction('grounding_knife','disconnect',GROUND_NORMAL);
+  if(!confirm('Отключить заземляющие ножи и восстановить нормальный режим (Rн = 550 Ом)?'))return;
+  fetch('/api/sim_node',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({node:GROUND_NODE,value:GROUND_NORMAL})})
+    .then(function(r){return r.json()}).then(function(d){
+      if(d.error){showNotification('Ошибка: '+d.error,'error');return}
+      showNotification('✅ Заземляющие ножи отключены. Нормальный режим восстановлен. Rн = 550 Ом','success');
+    });
+}
 </script>
 </body>
 </html>
