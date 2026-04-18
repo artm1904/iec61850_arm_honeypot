@@ -61,7 +61,7 @@
       <animate id="error" attributeName="fill" attributeType="XML" to="red" dur="10ms" fill="freeze" begin="indefinite" />
     </rect>
     <rect class="CSWI" height="18" width="16" y="115" x="792" stroke="none" fill="none"/>
-    <text fill="#8b949e" font-family="monospace" font-size="9" x="812" y="128" text-anchor="start">Q 35 Т1</text>
+    <text fill="#8b949e" font-family="monospace" font-size="9" x="812" y="128" text-anchor="start">Q СН Т1</text>
   </g>
   <line x1="800" y1="110" x2="800" y2="115" stroke="#ffffff" stroke-width="1.5" />
 
@@ -133,7 +133,7 @@
   <!-- CTR ВН T2 -->
   <circle cx="450" cy="100" r="5" fill="none" stroke="#ffffff" stroke-width="1"/>
   <line x1="445" y1="100" x2="455" y2="100" stroke="#ffffff" stroke-width="1"/>
-  <text fill="#3fb950" font-family="monospace" font-size="10" x="465" y="104">Iвн=232 A</text>
+  <text fill="#3fb950" font-family="monospace" font-size="10" x="465" y="104">Iвн=8.56 A</text>
 
   <line stroke="#ffffff" stroke-width="1.5" x1="450" y1="105" x2="450" y2="120"/>
 
@@ -157,14 +157,14 @@
       <animate id="error" attributeName="fill" attributeType="XML" to="red" dur="10ms" fill="freeze" begin="indefinite" />
     </rect>
     <rect class="CSWI" height="18" width="16" y="115" x="732" stroke="none" fill="none"/>
-    <text fill="#8b949e" font-family="monospace" font-size="9" x="728" y="128" text-anchor="end">Q 35 Т2</text>
+    <text fill="#8b949e" font-family="monospace" font-size="9" x="728" y="128" text-anchor="end">Q СН Т2</text>
   </g>
   <line x1="740" y1="110" x2="740" y2="115" stroke="#ffffff" stroke-width="1.5" />
 
   <line stroke="#ffffff" stroke-width="1.5" x1="450" y1="169" x2="450" y2="190"/>
   <circle cx="450" cy="195" r="5" fill="none" stroke="#ffffff" stroke-width="1"/>
   <line x1="445" y1="195" x2="455" y2="195" stroke="#ffffff" stroke-width="1"/>
-  <text fill="#3fb950" font-family="monospace" font-size="10" x="465" y="199">Iнн=587 A</text>
+  <text fill="#3fb950" font-family="monospace" font-size="10" x="465" y="199">Iнн=97.4 A</text>
   <text fill="#79c0ff" font-family="monospace" font-size="10" x="465" y="212">Uнн=10.3 кВ</text>
 
   <line stroke="#ffffff" stroke-width="1.5" x1="450" y1="200" x2="450" y2="225"/>
