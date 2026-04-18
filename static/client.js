@@ -363,6 +363,36 @@ function svg_load(mmi){
   // connect functions for reading/writing values and generating faults, that can socket.emit
 }
 
+function localToggleBreaker(event){
+  // Find the XCBR sibling to animate
+  var xcbrEl = null;
+  var parentG = this.parentElement;
+  var siblings = parentG.querySelectorAll('.XCBR, .XSWI');
+  if(siblings.length > 0){
+    xcbrEl = siblings[0];
+  } else {
+    xcbrEl = this;
+  }
+
+  var key = xcbrEl.id || this.id;
+  if(!(key in svgElementData)){
+    svgElementData[key] = { position: true };
+  }
+
+  var currentPos = svgElementData[key]['position'];
+  if(currentPos === true){
+    // Toggle to open (black fill)
+    var openAnim = xcbrEl.querySelector('#open');
+    if(openAnim) openAnim.beginElement();
+    svgElementData[key]['position'] = false;
+  } else {
+    // Toggle to close (white fill)
+    var closeAnim = xcbrEl.querySelector('#close');
+    if(closeAnim) closeAnim.beginElement();
+    svgElementData[key]['position'] = true;
+  }
+}
+
 function extLink(event){
   event.preventDefault();
   console.log("called: " + this.id);
