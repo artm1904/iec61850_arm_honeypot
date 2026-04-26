@@ -33,15 +33,15 @@ WORKDIR /srv/iec61850_open_client
 
 # --- ДОБАВЛЯЕМ BEELZEBUB ---
 # Копируем сертификаты, бинарник и конфиги напрямую из вашего образа custom-beelzebub
-COPY --from=custom-beelzebub /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=custom-beelzebub /opt/beelzebub /opt/beelzebub
+COPY --from=llm_honeypot-beelzebub /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=llm_honeypot-beelzebub /opt/beelzebub /opt/beelzebub
 
 # Копируем и настраиваем стартовый скрипт
 COPY ./entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Добавляем порты Beelzebub к портам клиента
-EXPOSE 22 80 2222 8080
+EXPOSE  80 2222
 
 # Используем наш скрипт как точку входа
 ENTRYPOINT ["/entrypoint.sh"]
