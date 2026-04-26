@@ -346,10 +346,51 @@ function svg_load(mmi){
       if(cl == "EXT"){
         el.onclick = extLink;
       }
+      // Make non-IED breakers/disconnectors interactive (local toggle only)
+      if((cl == "XCBR" || cl == "XSWI") && !el.id.startsWith("iec61850://") && !el.id.startsWith("iec60870://")){
+        svgElementData[el.id || ('_local_' + idx)] = { position: true };
+        el.onclick = localToggleBreaker;
+        el.style.cursor = 'pointer';
+      }
+      if(cl == "CSWI" && !el.id.startsWith("iec61850://") && !el.id.startsWith("iec60870://")){
+        svgElementData[el.id || ('_local_cswi_' + idx)] = { position: true };
+        el.onclick = localToggleBreaker;
+        el.style.cursor = 'pointer';
+      }
     }
   });
   socket.emit('register_datapoint_finished', '');
   // connect functions for reading/writing values and generating faults, that can socket.emit
+}
+
+function localToggleBreaker(event){
+  // Find the XCBR sibling to animate
+  var xcbrEl = null;
+  var parentG = this.parentElement;
+  var siblings = parentG.querySelectorAll('.XCBR, .XSWI');
+  if(siblings.length > 0){
+    xcbrEl = siblings[0];
+  } else {
+    xcbrEl = this;
+  }
+
+  var key = xcbrEl.id || this.id;
+  if(!(key in svgElementData)){
+    svgElementData[key] = { position: true };
+  }
+
+  var currentPos = svgElementData[key]['position'];
+  if(currentPos === true){
+    // Toggle to open (black fill)
+    var openAnim = xcbrEl.querySelector('#open');
+    if(openAnim) openAnim.beginElement();
+    svgElementData[key]['position'] = false;
+  } else {
+    // Toggle to close (white fill)
+    var closeAnim = xcbrEl.querySelector('#close');
+    if(closeAnim) closeAnim.beginElement();
+    svgElementData[key]['position'] = true;
+  }
 }
 
 function extLink(event){

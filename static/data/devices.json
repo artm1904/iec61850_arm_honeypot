@@ -1,0 +1,157 @@
+{
+  "devices": [
+    {
+      "id": "IED1_XCBR",
+      "name": "Терминал защиты выключателя Q1",
+      "model": "ЭКРА ШЭ2607 057",
+      "ip": "10.0.0.2",
+      "port": 102,
+      "protocol": "IEC 61850 MMS",
+      "firmware": "v4.30.12",
+      "serial": "SN-2024-0571-A",
+      "location": "Ячейка №1, панель РЗА",
+      "status": "online",
+      "last_sync": "2026-04-17T18:24:00Z",
+      "comtrade_count": 3,
+      "di_count": 16,
+      "do_count": 8,
+      "led_count": 12,
+      "functions": ["МТЗ", "УРОВ", "АПВ", "ЛЗШ"],
+      "terminal_config": {
+        "di": [
+          {"num": 1, "signal": "Выключатель Q1 — Включён", "type": "NC"},
+          {"num": 2, "signal": "Выключатель Q1 — Отключён", "type": "NO"},
+          {"num": 3, "signal": "Разъединитель QS1 — Включён", "type": "NC"},
+          {"num": 4, "signal": "Пружина заведена", "type": "NO"},
+          {"num": 5, "signal": "Давление SF6 норма", "type": "NC"},
+          {"num": 6, "signal": "Блокировка операционная", "type": "NO"},
+          {"num": 7, "signal": "Внешний пуск осциллографа", "type": "NO"},
+          {"num": 8, "signal": "Дискр. вход 8 — резерв", "type": "NO"}
+        ],
+        "do": [
+          {"num": 1, "signal": "Отключить Q1", "type": "импульс"},
+          {"num": 2, "signal": "Включить Q1", "type": "импульс"},
+          {"num": 3, "signal": "Пуск УРОВ", "type": "импульс"},
+          {"num": 4, "signal": "Реле выход 4 — резерв", "type": "—"}
+        ],
+        "leds": [
+          {"num": 1, "signal": "МТЗ I ст. — сработала", "color": "red"},
+          {"num": 2, "signal": "МТЗ II ст. — сработала", "color": "red"},
+          {"num": 3, "signal": "УРОВ — сработал", "color": "red"},
+          {"num": 4, "signal": "АПВ — успешно", "color": "green"},
+          {"num": 5, "signal": "АПВ — неуспешно", "color": "yellow"},
+          {"num": 6, "signal": "Неисправность", "color": "yellow"},
+          {"num": 7, "signal": "Готовность", "color": "green"},
+          {"num": 8, "signal": "Тест", "color": "white"}
+        ],
+        "oscillograph": {
+          "channels_analog": 8,
+          "channels_digital": 16,
+          "sample_rate": 4800,
+          "pretrigger_ms": 100,
+          "posttrigger_ms": 500,
+          "max_records": 50,
+          "trigger_sources": ["МТЗ пуск", "УРОВ пуск", "АПВ пуск", "Внешний пуск", "Ручной запуск"]
+        },
+        "protocols": {
+          "mms": {"enabled": true, "port": 102},
+          "goose": {"enabled": true, "appid": "0001", "vlan": 100},
+          "sv": {"enabled": false},
+          "iec104": {"enabled": false, "port": 2404}
+        }
+      }
+    },
+    {
+      "id": "IED2_PTOC",
+      "name": "Терминал токовой защиты Т1",
+      "model": "БМРЗ-150",
+      "ip": "10.0.0.3",
+      "port": 102,
+      "protocol": "IEC 61850 MMS",
+      "firmware": "v2.18.7",
+      "serial": "SN-2023-1507-B",
+      "location": "Ячейка №2, панель РЗА",
+      "status": "online",
+      "last_sync": "2026-04-17T18:24:05Z",
+      "comtrade_count": 5,
+      "di_count": 12,
+      "do_count": 6,
+      "led_count": 8,
+      "functions": ["МТЗ", "ТЗНП", "ДЗ", "ТО"],
+      "terminal_config": {
+        "di": [
+          {"num": 1, "signal": "Ток фазы A > уставки", "type": "NO"},
+          {"num": 2, "signal": "Ток фазы B > уставки", "type": "NO"},
+          {"num": 3, "signal": "Ток фазы C > уставки", "type": "NO"},
+          {"num": 4, "signal": "Ток 3I0 > уставки", "type": "NO"},
+          {"num": 5, "signal": "Блокировка от внешнего устройства", "type": "NC"},
+          {"num": 6, "signal": "Пуск осциллографа", "type": "NO"}
+        ],
+        "do": [
+          {"num": 1, "signal": "Отключить выключатель", "type": "импульс"},
+          {"num": 2, "signal": "Сигнал на ЦС", "type": "длительный"},
+          {"num": 3, "signal": "Реле выход 3 — резерв", "type": "—"}
+        ],
+        "leds": [
+          {"num": 1, "signal": "МТЗ — пуск", "color": "yellow"},
+          {"num": 2, "signal": "МТЗ — срабатывание", "color": "red"},
+          {"num": 3, "signal": "ТЗНП — срабатывание", "color": "red"},
+          {"num": 4, "signal": "Неисправность", "color": "yellow"},
+          {"num": 5, "signal": "Готовность", "color": "green"}
+        ],
+        "oscillograph": {
+          "channels_analog": 6,
+          "channels_digital": 12,
+          "sample_rate": 4800,
+          "pretrigger_ms": 80,
+          "posttrigger_ms": 400,
+          "max_records": 30,
+          "trigger_sources": ["МТЗ пуск", "ТЗНП пуск", "ДЗ пуск", "Ручной запуск"]
+        },
+        "protocols": {
+          "mms": {"enabled": true, "port": 102},
+          "goose": {"enabled": true, "appid": "0002", "vlan": 100},
+          "sv": {"enabled": true, "appid": "4001", "vlan": 200},
+          "iec104": {"enabled": false}
+        }
+      }
+    },
+    {
+      "id": "IED3_SMV",
+      "name": "Мерджинг юнит MU Т1",
+      "model": "ABB SAM600-CT",
+      "ip": "10.0.0.4",
+      "port": 102,
+      "protocol": "IEC 61850 9-2LE",
+      "firmware": "v1.5.3",
+      "serial": "SN-2024-6003-C",
+      "location": "Ячейка №2, клеммный отсек",
+      "status": "online",
+      "last_sync": "2026-04-17T18:24:10Z",
+      "comtrade_count": 0,
+      "di_count": 4,
+      "do_count": 0,
+      "led_count": 4,
+      "functions": ["SV Publisher", "MMXU"],
+      "terminal_config": {
+        "di": [
+          {"num": 1, "signal": "Синхронизация PTP", "type": "NO"},
+          {"num": 2, "signal": "Питание DC норма", "type": "NC"}
+        ],
+        "do": [],
+        "leds": [
+          {"num": 1, "signal": "Run", "color": "green"},
+          {"num": 2, "signal": "Error", "color": "red"},
+          {"num": 3, "signal": "Sync", "color": "green"}
+        ],
+        "oscillograph": null,
+        "protocols": {
+          "mms": {"enabled": true, "port": 102},
+          "goose": {"enabled": false},
+          "sv": {"enabled": true, "appid": "4001", "vlan": 200},
+          "iec104": {"enabled": false}
+        }
+      }
+    }
+  ]
+}

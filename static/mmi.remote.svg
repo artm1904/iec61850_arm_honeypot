@@ -1,71 +1,346 @@
-<svg width="550" height="510" xmlns="http://www.w3.org/2000/svg" style="vector-effect: non-scaling-stroke;">
+<svg width="1500" height="680" viewBox="0 0 950 680" xmlns="http://www.w3.org/2000/svg" style="vector-effect: non-scaling-stroke;">
  <g>
   <title>background</title>
-  <rect fill="#000000" id="canvas_background" height="512" width="552" y="0" x="0"/>
+  <rect fill="#0d1117" id="canvas_background" height="682" width="1500" y="0" x="0"/>
  </g>
  <g>
-  <a id="http://127.0.0.1:5010" class="EXT" href="#" >
-    <rect id="a1"  class="" stroke="#ffffff" y="10" x="2" height="24" width="164" fill="#000000" stroke-width="1.5"/> 
-    <text id="a2"  class="" stroke="#ffffff" y="26" x="6" xml:space="preserve" text-anchor="left" font-family="Helvetica, Arial, sans-serif" font-size="16" fill="#ffffff">open simulation tab</text>
-  </a>
-  <text id="iec61850://10.0.0.3:102/[MX] IED2_PTOCGenericIO/GGIO1.AnIn1.mag.f" class="MEAS" data-text=""></text>
-  <title>Bay 1</title>
-  <text id="IFL" class="IFL" stroke="#ffffff" xml:space="preserve" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="24" y="80" x="266" fill="#ffffff">50KV Feed</text>
-  <ellipse id="svg_top" stroke="#ffffff" ry="2.424242" rx="2.121212" cy="91.858974" cx="266" fill-opacity="null" stroke-width="1.5" fill="none"/>
+  <!-- ═══ TITLE ═══ -->
+  <text id="title" stroke="none" xml:space="preserve" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="14" y="18" x="475" fill="#00b9a0" font-weight="bold">ПС «Учебная» 110/35/10 кВ — Однолинейная схема</text>
 
+  <!-- ═══ 110 kV BUSBARS (Секция 1 и 2) ═══ -->
+  <line id="BB110_S1" stroke="#ffcc00" stroke-width="3" x1="50" y1="50" x2="340" y2="50"/>
+  <line id="BB110_S2" stroke="#ffcc00" stroke-width="3" x1="360" y1="50" x2="650" y2="50"/>
+  <text fill="#ffcc00" font-family="monospace" font-size="11" x="100" y="43">Шины 110 кВ (Секция 1)</text>
+  <text fill="#ffcc00" font-family="monospace" font-size="11" x="420" y="43">Шины 110 кВ (Секция 2)</text>
+  <!-- Секционный выключатель -->
+  <rect x="335" y="42" width="30" height="16" fill="#0d1117" stroke="#ffcc00" stroke-width="1.5"/>
+  <text fill="#ffcc00" font-family="monospace" font-size="9" x="342" y="54">СВ</text>
+
+  <!-- ═══ BRANCH T1 (left) ═══ -->
+  <line stroke="#ffffff" stroke-width="1.5" x1="160" y1="50" x2="160" y2="69"/>
+  <!-- Q ВН Т1 -->
+  <g id="Q_VN_T1">
+    <rect class="XCBR" height="18" width="16" y="69" x="152" stroke-width="1.5" stroke="#ffffff" fill="#ffffff">
+      <animate id="open" attributeName="fill" attributeType="XML" to="black" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="transition" attributeName="fill" attributeType="XML" to="green" dur="10ms" fill="freeze" begin="indefinite" />
+      <animate id="close" attributeName="fill" attributeType="XML" to="white" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="error" attributeName="fill" attributeType="XML" to="red" dur="10ms" fill="freeze" begin="indefinite" />
+    </rect>
+    <rect class="CSWI" height="18" width="16" y="69" x="152" stroke="none" fill="none"/>
+    <text fill="#8b949e" font-family="monospace" font-size="9" x="175" y="82">Q ВН Т1</text>
+  </g>
+  <line stroke="#ffffff" stroke-width="1.5" x1="160" y1="87" x2="160" y2="95"/>
+
+  <!-- CTR ВН и показания -->
   <g id="S12/D1/Q1/I1">
     <title>CTR</title>
-    <text id="iec61850://10.0.0.5:102/IED4_SMVMUnn/MMXU1.AvAPhs.mag.f" class="MEAS" data-text="Current: {value} A" fill="#ffffff" stroke="#ffffff" x="291.851085" y="125.166792" font-size="12" font-family="Helvetica, Arial, sans-serif" text-anchor="start" xml:space="preserve" font-weight="normal" font-style="normal">current: {value} A</text>
+    <circle cx="160" cy="100" r="5" fill="none" stroke="#ffffff" stroke-width="1"/>
+    <line x1="155" y1="100" x2="165" y2="100" stroke="#ffffff" stroke-width="1"/>
+    <text id="iec61850://10.0.0.5:102/IED4_SMVMUnn/MMXU1.AvAPhs.mag.f" class="MEAS" data-text="Iвн={value} A" fill="#3fb950" stroke="none" x="175" y="104" font-size="10" font-family="monospace" text-anchor="start" xml:space="preserve">Iвн=... A</text>
   </g>
 
-  <line id="S12/D1/Q1/L1" class="LINE" stroke-linecap="undefined" stroke-linejoin="undefined" y2="153.934719" x2="266" y1="93.434721" x1="266" stroke-width="1.5" stroke="#ffffff" fill="none"/>
+  <line stroke="#ffffff" stroke-width="1.5" x1="160" y1="105" x2="160" y2="120"/>
 
+  <!-- T1 Transformer (Трехобмоточный) -->
   <g id="S12/D1/T1">
-    <title>PTR</title>
-    <ellipse id="svg_T1_a" ry="18" rx="18" cy="171.753014" cx="266" fill-opacity="null" stroke-width="1.5" stroke="#ffffff" fill="none"/>
-    <text    id="svg_T1_name" stroke="#ffffff"  xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="24" y="186.66199" x="296" stroke-width="null" fill="#ffffff">T1</text>
-    <ellipse id="svg_T1_b" ry="18" rx="18" cy="196.290907" cx="266" fill-opacity="null" stroke-width="1.5" stroke="#ffffff" fill="none"/>
+    <title>Трансформатор Т1</title>
+    <ellipse ry="14" rx="14" cy="134" cx="160" fill="none" stroke-width="1.5" stroke="#ffffff"/>
+    <ellipse ry="14" rx="14" cy="155" cx="160" fill="none" stroke-width="1.5" stroke="#ffffff"/>
+    <ellipse ry="14" rx="14" cy="144.5" cx="174" fill="none" stroke-width="1.5" stroke="#ffffff"/>
+    <text fill="#ffffff" font-family="sans-serif" font-size="14" font-weight="bold" x="195" y="149">Т1</text>
+    <text fill="#8b949e" font-family="monospace" font-size="9" x="195" y="162">110/35/10 кВ</text>
   </g>
- 
-  <line id="S12/E1/Q1/L2" class="LINE" stroke="#ffffff" stroke-linecap="undefined" stroke-linejoin="undefined" y2="256.43483" x2="266" y1="214.934859" x1="266" stroke-width="1.5" fill="none"/>
 
+  <!-- Подключение Т1 к 35 кВ (Идет к ПРАВОЙ секции) -->
+  <path d="M 188 144.5 V 180 H 800 V 133" stroke="#ffffff" stroke-width="1.5" fill="none"/>
+  <g id="Q_35_T1">
+    <rect class="XCBR" height="18" width="16" y="115" x="792" stroke-width="1.5" stroke="#ffffff" fill="#ffffff">
+      <animate id="open" attributeName="fill" attributeType="XML" to="black" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="transition" attributeName="fill" attributeType="XML" to="green" dur="10ms" fill="freeze" begin="indefinite" />
+      <animate id="close" attributeName="fill" attributeType="XML" to="white" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="error" attributeName="fill" attributeType="XML" to="red" dur="10ms" fill="freeze" begin="indefinite" />
+    </rect>
+    <rect class="CSWI" height="18" width="16" y="115" x="792" stroke="none" fill="none"/>
+    <text fill="#8b949e" font-family="monospace" font-size="9" x="812" y="128" text-anchor="start">Q СН Т1</text>
+  </g>
+  <line x1="800" y1="110" x2="800" y2="115" stroke="#ffffff" stroke-width="1.5" />
+
+  <line stroke="#ffffff" stroke-width="1.5" x1="160" y1="169" x2="160" y2="190"/>
+
+  <!-- CTR НН и показания -->
   <g id="S12/E1/Q1/I1">
     <title>CTR</title>
-    <text id="iec61850://10.0.0.4:102/IED3_SMVMUnn/MMXU1.AvAPhs.mag.f" class="MEAS" data-text="Current: {value} A" fill="#ffffff" stroke="#ffffff" x="296" y="228.499978" font-size="12" font-family="Helvetica, Arial, sans-serif" text-anchor="start" xml:space="preserve" font-weight="normal" font-style="normal"></text>
+    <circle cx="160" cy="195" r="5" fill="none" stroke="#ffffff" stroke-width="1"/>
+    <line x1="155" y1="195" x2="165" y2="195" stroke="#ffffff" stroke-width="1"/>
+    <text id="iec61850://10.0.0.4:102/IED3_SMVMUnn/MMXU1.AvAPhs.mag.f" class="MEAS" data-text="Iнн={value} A" fill="#3fb950" stroke="none" x="175" y="199" font-size="10" font-family="monospace" text-anchor="start" xml:space="preserve">Iнн=... A</text>
   </g>
+  <!-- VTR и показания -->
   <g id="S12/E1/Q1/U1">
     <title>VTR</title>
-    <text id="iec61850://10.0.0.4:102/IED3_SMVMUnn/MMXU1.AvPhVPhs.mag.f" class="MEAS" data-text="Voltage: {value} V" fill="#ffffff" stroke="#ffffff" x="296" y="244.499945" font-size="12" font-family="Helvetica, Arial, sans-serif" text-anchor="start" xml:space="preserve" font-weight="normal" font-style="normal">voltage: {value} V</text>
+    <text id="iec61850://10.0.0.4:102/IED3_SMVMUnn/MMXU1.AvPhVPhs.mag.f" class="MEAS" data-text="Uнн={value} В" fill="#79c0ff" stroke="none" x="175" y="212" font-size="10" font-family="monospace" text-anchor="start" xml:space="preserve">Uнн=... В</text>
   </g>
 
+  <line stroke="#ffffff" stroke-width="1.5" x1="160" y1="200" x2="160" y2="225"/>
+
+  <!-- QA1 — Выключатель Т1 -->
   <g id="S12/E1/Q1/QA1">
-    <title>CBR</title>
-    <text id="iec61850://10.0.0.2:102/IED1_XCBRGenericIO/XCBR1.Pos.stVal"     class="MEAS" data-text="CBR: QA1={value}" fill="#ffffff" stroke="#ffffff" x="296" y="272.166593" font-size="12" font-family="Helvetica, Arial, sans-serif" text-anchor="start" xml:space="preserve" font-weight="normal" font-style="normal"></text>
-    <rect id="iec61850://10.0.0.2:102/IED1_XCBRGenericIO/XCBR1.Pos.stVal"     class="XCBR" height="22.553162" width="19.999974" y="257.946454" x="256.364398" stroke-width="1.5" stroke="#ffffff" fill="#ffffff">
-      <animate id="open" attributeName="fill" attributeType="XML" to="black" dur="100ms" fill="freeze" />
-      <animate id="transition" attributeName="fill" attributeType="XML" to="green" dur="10ms" fill="freeze" />
-      <animate id="close" attributeName="fill" attributeType="XML"  to="white" dur="100ms" fill="freeze" /> 
-      <animate id="error" attributeName="fill" attributeType="XML"  to="red" dur="10ms" fill="freeze" />           
+    <title>CBR Т1</title>
+    <text id="iec61850://10.0.0.2:102/IED1_XCBRGenericIO/XCBR1.Pos.stVal" class="MEAS" data-text="CBR={value}" fill="#8b949e" stroke="none" x="175" y="240" font-size="9" font-family="monospace"/>
+    <rect id="iec61850://10.0.0.2:102/IED1_XCBRGenericIO/XCBR1.Pos.stVal" class="XCBR" height="18" width="16" y="227" x="152" stroke-width="1.5" stroke="#ffffff" fill="#ffffff">
+      <animate id="open" attributeName="fill" attributeType="XML" to="black" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="transition" attributeName="fill" attributeType="XML" to="green" dur="10ms" fill="freeze" begin="indefinite" />
+      <animate id="close" attributeName="fill" attributeType="XML" to="white" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="error" attributeName="fill" attributeType="XML" to="red" dur="10ms" fill="freeze" begin="indefinite" />
     </rect>
-    <rect id="iec61850://10.0.0.2:102/IED1_XCBRGenericIO/CSWI1.Pos"     class="CSWI" height="22.553162" width="19.999974" y="257.946454" x="256.364398" stroke-width="1.5" stroke="none" fill="none"/>
+    <rect id="iec61850://10.0.0.2:102/IED1_XCBRGenericIO/CSWI1.Pos" class="CSWI" height="18" width="16" y="227" x="152" stroke="none" fill="none"/>
+    <text fill="#8b949e" font-family="monospace" font-size="9" x="105" y="240">Q НН Т1</text>
   </g>
 
-  <line id="S12/E1/Q1/L1" class="LINE" stroke="#ffffff" stroke-linecap="undefined" stroke-linejoin="undefined" y2="300.359068" x2="266" y1="281.359068" x1="266" stroke-width="1.5" fill="none"/>
+  <line stroke="#ffffff" stroke-width="1.5" x1="160" y1="245" x2="160" y2="265"/>
 
+  <!-- QB1 — Разъединитель НН Т1 -->
   <g id="S12/E1/Q1/QB1">
-    <title>SWI</title>
-    <text id="iec61850://10.0.0.2:102/IED1_XCBRGenericIO/XSWI2.Pos.stVal"     class="MEAS" data-text="DIS: QB1={value}" fill="#ffffff" stroke="#ffffff" x="296" y="314.666538" font-size="12" font-family="Helvetica, Arial, sans-serif" text-anchor="start" xml:space="preserve" font-weight="normal" font-style="normal"></text>
-    <rect id="iec61850://10.0.0.2:102/IED1_XCBRGenericIO/CSWI2.Pos"    class="CSWI" height="19" width="19" y="300.49959" x="256.864387" stroke="#ffffff" fill="#000000"/> 
-    <line id="iec61850://10.0.0.2:102/IED1_XCBRGenericIO/XSWI2.Pos.stVal"     class="XSWI" stroke="#ffffff" stroke-linecap="undefined" stroke-linejoin="undefined" y2="320" x2="266" y1="300" x1="266" stroke-width="4" fill="none">
-        <animateTransform id="open" attributeName="transform" attributeType="XML" type="rotate" to="90 266 310 " dur="100ms" fill="freeze" />
-        <animateTransform id="close" attributeName="transform" attributeType="XML" type="rotate" to="0 266 310 " dur="100ms" fill="freeze" />
-        <animateTransform id="transition" attributeName="transform" attributeType="XML" type="rotate" to="45 266 310 " dur="100ms" fill="freeze" />
-        <animateTransform id="error" attributeName="stroke" attributeType="XML" to="red" dur="100ms" fill="freeze" />
+    <title>DIS НН Т1</title>
+    <text id="iec61850://10.0.0.2:102/IED1_XCBRGenericIO/XSWI2.Pos.stVal" class="MEAS" data-text="DIS={value}" fill="#8b949e" stroke="none" x="175" y="278" font-size="9" font-family="monospace"/>
+    <rect id="iec61850://10.0.0.2:102/IED1_XCBRGenericIO/CSWI2.Pos" class="CSWI" height="16" width="16" y="267" x="152" stroke="#ffffff" fill="#0d1117"/>
+    <line id="iec61850://10.0.0.2:102/IED1_XCBRGenericIO/XSWI2.Pos.stVal" class="XSWI" stroke="#ffffff" y2="284" x2="160" y1="267" x1="160" stroke-width="3" fill="none">
+      <animateTransform id="open" attributeName="transform" attributeType="XML" type="rotate" to="90 160 276" dur="100ms" fill="freeze" begin="indefinite" />
+      <animateTransform id="close" attributeName="transform" attributeType="XML" type="rotate" to="0 160 276" dur="100ms" fill="freeze" begin="indefinite" />
+      <animateTransform id="transition" attributeName="transform" attributeType="XML" type="rotate" to="45 160 276" dur="100ms" fill="freeze" begin="indefinite" />
+      <animateTransform id="error" attributeName="stroke" attributeType="XML" to="red" dur="100ms" fill="freeze" begin="indefinite" />
     </line>
+    <text fill="#8b949e" font-family="monospace" font-size="9" x="125" y="278">S НН</text>
   </g>
 
-  <line id="S12/E1/W1/BB1" class="LINE" stroke="#ffffff" stroke-linecap="undefined" stroke-linejoin="undefined" y2="360" x2="266" y1="320.436511" x1="266" stroke-width="1.5" fill="none"/>
+  <line stroke="#ffffff" stroke-width="1.5" x1="160" y1="284" x2="160" y2="360"/>
 
-  <text id="LOAD" class="LOAD" stroke="#ffffff"  xml:space="preserve" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="24" y="380" x="266" fill="#ffffff">Load</text>
+
+  <!-- ═══ BRANCH T2 (right) ═══ -->
+  <line stroke="#ffffff" stroke-width="1.5" x1="450" y1="50" x2="450" y2="69"/>
+  <!-- Q ВН Т2 -->
+  <g id="Q_VN_T2">
+    <rect class="XCBR" height="18" width="16" y="69" x="442" stroke-width="1.5" stroke="#ffffff" fill="#ffffff">
+      <animate id="open" attributeName="fill" attributeType="XML" to="black" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="transition" attributeName="fill" attributeType="XML" to="green" dur="10ms" fill="freeze" begin="indefinite" />
+      <animate id="close" attributeName="fill" attributeType="XML" to="white" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="error" attributeName="fill" attributeType="XML" to="red" dur="10ms" fill="freeze" begin="indefinite" />
+    </rect>
+    <rect class="CSWI" height="18" width="16" y="69" x="442" stroke="none" fill="none"/>
+    <text fill="#8b949e" font-family="monospace" font-size="9" x="465" y="82">Q ВН Т2</text>
+  </g>
+  <line stroke="#ffffff" stroke-width="1.5" x1="450" y1="87" x2="450" y2="95"/>
+
+  <!-- CTR ВН T2 -->
+  <circle cx="450" cy="100" r="5" fill="none" stroke="#ffffff" stroke-width="1"/>
+  <line x1="445" y1="100" x2="455" y2="100" stroke="#ffffff" stroke-width="1"/>
+  <text fill="#3fb950" font-family="monospace" font-size="10" x="465" y="104">Iвн=8.56 A</text>
+
+  <line stroke="#ffffff" stroke-width="1.5" x1="450" y1="105" x2="450" y2="120"/>
+
+  <!-- T2 Transformer (Трехобмоточный) -->
+  <g id="T2">
+    <title>Трансформатор Т2</title>
+    <ellipse ry="14" rx="14" cy="134" cx="450" fill="none" stroke-width="1.5" stroke="#ffffff"/>
+    <ellipse ry="14" rx="14" cy="155" cx="450" fill="none" stroke-width="1.5" stroke="#ffffff"/>
+    <ellipse ry="14" rx="14" cy="144.5" cx="464" fill="none" stroke-width="1.5" stroke="#ffffff"/>
+    <text fill="#ffffff" font-family="sans-serif" font-size="14" font-weight="bold" x="485" y="149">Т2</text>
+    <text fill="#8b949e" font-family="monospace" font-size="9" x="485" y="162">110/35/10 кВ</text>
+  </g>
+
+  <!-- Подключение Т2 к 35 кВ (Идет к ЛЕВОЙ секции) -->
+  <path d="M 478 144.5 V 165 H 740 V 133" stroke="#ffffff" stroke-width="1.5" fill="none"/>
+  <g id="Q_35_T2">
+    <rect class="XCBR" height="18" width="16" y="115" x="732" stroke-width="1.5" stroke="#ffffff" fill="#ffffff">
+      <animate id="open" attributeName="fill" attributeType="XML" to="black" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="transition" attributeName="fill" attributeType="XML" to="green" dur="10ms" fill="freeze" begin="indefinite" />
+      <animate id="close" attributeName="fill" attributeType="XML" to="white" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="error" attributeName="fill" attributeType="XML" to="red" dur="10ms" fill="freeze" begin="indefinite" />
+    </rect>
+    <rect class="CSWI" height="18" width="16" y="115" x="732" stroke="none" fill="none"/>
+    <text fill="#8b949e" font-family="monospace" font-size="9" x="728" y="128" text-anchor="end">Q СН Т2</text>
+  </g>
+  <line x1="740" y1="110" x2="740" y2="115" stroke="#ffffff" stroke-width="1.5" />
+
+  <line stroke="#ffffff" stroke-width="1.5" x1="450" y1="169" x2="450" y2="190"/>
+  <circle cx="450" cy="195" r="5" fill="none" stroke="#ffffff" stroke-width="1"/>
+  <line x1="445" y1="195" x2="455" y2="195" stroke="#ffffff" stroke-width="1"/>
+  <text fill="#3fb950" font-family="monospace" font-size="10" x="465" y="199">Iнн=97.4 A</text>
+  <text fill="#79c0ff" font-family="monospace" font-size="10" x="465" y="212">Uнн=10.3 кВ</text>
+
+  <line stroke="#ffffff" stroke-width="1.5" x1="450" y1="200" x2="450" y2="225"/>
+
+  <!-- QA2 — Выключатель Т2 -->
+  <g id="Q_T2">
+    <rect class="XCBR" height="18" width="16" y="227" x="442" stroke-width="1.5" stroke="#ffffff" fill="#ffffff">
+      <animate id="open" attributeName="fill" attributeType="XML" to="black" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="transition" attributeName="fill" attributeType="XML" to="green" dur="10ms" fill="freeze" begin="indefinite" />
+      <animate id="close" attributeName="fill" attributeType="XML" to="white" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="error" attributeName="fill" attributeType="XML" to="red" dur="10ms" fill="freeze" begin="indefinite" />
+    </rect>
+    <rect class="CSWI" height="18" width="16" y="227" x="442" stroke="none" fill="none"/>
+    <text fill="#8b949e" font-family="monospace" font-size="9" x="395" y="240">Q НН Т2</text>
+  </g>
+
+  <line stroke="#ffffff" stroke-width="1.5" x1="450" y1="245" x2="450" y2="265"/>
+
+  <!-- QB2 — Разъединитель НН Т2 -->
+  <rect height="16" width="16" y="267" x="442" stroke="#ffffff" fill="#0d1117"/>
+  <line stroke="#ffffff" y2="284" x2="450" y1="267" x1="450" stroke-width="3" fill="none"/>
+  <text fill="#8b949e" font-family="monospace" font-size="9" x="422" y="278">S НН</text>
+
+  <line stroke="#ffffff" stroke-width="1.5" x1="450" y1="284" x2="450" y2="360"/>
+
+
+  <!-- ═══ 35kV SECTION ═══ -->
+  <line id="BB35_S1" stroke="#e3b341" stroke-width="3" x1="680" y1="110" x2="760" y2="110"/>
+  <line id="BB35_S2" stroke="#e3b341" stroke-width="3" x1="780" y1="110" x2="860" y2="110"/>
+  <text fill="#e3b341" font-family="monospace" font-size="11" x="670" y="105" text-anchor="end">Шины 35 кВ (С1)</text>
+  <text fill="#e3b341" font-family="monospace" font-size="11" x="870" y="105" text-anchor="start">Шины 35 кВ (С2)</text>
+
+  <!-- АВР 35кВ -->
+  <rect x="760" y="102" width="30" height="16" fill="#0d1117" stroke="#e3b341" stroke-width="1.5"/>
+  <text fill="#e3b341" font-family="monospace" font-size="9" x="775" y="114" text-anchor="middle">АВР</text>
+
+  <!-- 35kV Feeders -->
+  <g id="F1-35">
+    <line stroke="#ffffff" stroke-width="1.5" x1="700" y1="110" x2="700" y2="95"/>
+    <rect class="XCBR" height="14" width="12" y="81" x="694" stroke-width="1.5" stroke="#ffffff" fill="#ffffff">
+      <animate id="open" attributeName="fill" attributeType="XML" to="black" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="transition" attributeName="fill" attributeType="XML" to="green" dur="10ms" fill="freeze" begin="indefinite" />
+      <animate id="close" attributeName="fill" attributeType="XML" to="white" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="error" attributeName="fill" attributeType="XML" to="red" dur="10ms" fill="freeze" begin="indefinite" />
+    </rect>
+    <rect class="CSWI" height="14" width="12" y="81" x="694" stroke="none" fill="none"/>
+    <path d="M 700 81 v -11 m -3 3 l 3 -3 l 3 3" stroke="#ffffff" stroke-width="1.5" fill="none"/>
+    <text fill="#8b949e" font-family="monospace" font-size="8" x="710" y="75">Ф1-35</text>
+  </g>
+
+  <g id="F2-35">
+    <line stroke="#ffffff" stroke-width="1.5" x1="840" y1="110" x2="840" y2="95"/>
+    <rect class="XCBR" height="14" width="12" y="81" x="834" stroke-width="1.5" stroke="#ffffff" fill="#ffffff">
+      <animate id="open" attributeName="fill" attributeType="XML" to="black" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="transition" attributeName="fill" attributeType="XML" to="green" dur="10ms" fill="freeze" begin="indefinite" />
+      <animate id="close" attributeName="fill" attributeType="XML" to="white" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="error" attributeName="fill" attributeType="XML" to="red" dur="10ms" fill="freeze" begin="indefinite" />
+    </rect>
+    <rect class="CSWI" height="14" width="12" y="81" x="834" stroke="none" fill="none"/>
+    <path d="M 840 81 v -11 m -3 3 l 3 -3 l 3 3" stroke="#ffffff" stroke-width="1.5" fill="none"/>
+    <text fill="#8b949e" font-family="monospace" font-size="8" x="850" y="75">Ф2-35</text>
+  </g>
+
+
+  <!-- ═══ 10 kV BUSBARS ═══ -->
+  <line id="BB10_S1" stroke="#f85149" stroke-width="3" x1="50" y1="360" x2="330" y2="360"/>
+  <line id="BB10_S2" stroke="#f85149" stroke-width="3" x1="350" y1="360" x2="640" y2="360"/>
+  <text fill="#f85149" font-family="monospace" font-size="11" x="20" y="345" text-anchor="start">Шины 10 кВ (Секция 1)</text>
+  <text fill="#f85149" font-family="monospace" font-size="11" x="500" y="345" text-anchor="start">Шины 10 кВ (Секция 2)</text>
+
+  <!-- АВР 10кВ -->
+  <rect x="325" y="352" width="30" height="16" fill="#0d1117" stroke="#f85149" stroke-width="1.5"/>
+  <text fill="#f85149" font-family="monospace" font-size="9" x="340" y="364" text-anchor="middle">АВР</text>
+
+
+  <!-- ═══ 10kV FEEDERS ═══ -->
+  <!-- Feeder 1 -->
+  <g id="F1">
+    <line stroke="#ffffff" stroke-width="1.5" x1="90" y1="360" x2="90" y2="400"/>
+    <rect class="XCBR" height="14" width="12" y="400" x="84" stroke-width="1.5" stroke="#ffffff" fill="#ffffff">
+      <animate id="open" attributeName="fill" attributeType="XML" to="black" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="transition" attributeName="fill" attributeType="XML" to="green" dur="10ms" fill="freeze" begin="indefinite" />
+      <animate id="close" attributeName="fill" attributeType="XML" to="white" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="error" attributeName="fill" attributeType="XML" to="red" dur="10ms" fill="freeze" begin="indefinite" />
+    </rect>
+    <rect class="CSWI" height="14" width="12" y="400" x="84" stroke="none" fill="none"/>
+    <path d="M 90 414 v 10 m -3 -3 l 3 3 l 3 -3" stroke="#ffffff" stroke-width="1.5" fill="none"/>
+    <text fill="#8b949e" font-family="monospace" font-size="9" x="100" y="425">Ф1</text>
+  </g>
+
+  <!-- Feeder 2 -->
+  <g id="F2">
+    <line stroke="#ffffff" stroke-width="1.5" x1="150" y1="360" x2="150" y2="400"/>
+    <rect class="XCBR" height="14" width="12" y="400" x="144" stroke-width="1.5" stroke="#ffffff" fill="#ffffff">
+      <animate id="open" attributeName="fill" attributeType="XML" to="black" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="transition" attributeName="fill" attributeType="XML" to="green" dur="10ms" fill="freeze" begin="indefinite" />
+      <animate id="close" attributeName="fill" attributeType="XML" to="white" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="error" attributeName="fill" attributeType="XML" to="red" dur="10ms" fill="freeze" begin="indefinite" />
+    </rect>
+    <rect class="CSWI" height="14" width="12" y="400" x="144" stroke="none" fill="none"/>
+    <path d="M 150 414 v 10 m -3 -3 l 3 3 l 3 -3" stroke="#ffffff" stroke-width="1.5" fill="none"/>
+    <text fill="#8b949e" font-family="monospace" font-size="9" x="160" y="425">Ф2</text>
+  </g>
+
+  <!-- Feeder 3 -->
+  <g id="F3">
+    <line stroke="#ffffff" stroke-width="1.5" x1="210" y1="360" x2="210" y2="400"/>
+    <rect class="XCBR" height="14" width="12" y="400" x="204" stroke-width="1.5" stroke="#ffffff" fill="#ffffff">
+      <animate id="open" attributeName="fill" attributeType="XML" to="black" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="transition" attributeName="fill" attributeType="XML" to="green" dur="10ms" fill="freeze" begin="indefinite" />
+      <animate id="close" attributeName="fill" attributeType="XML" to="white" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="error" attributeName="fill" attributeType="XML" to="red" dur="10ms" fill="freeze" begin="indefinite" />
+    </rect>
+    <rect class="CSWI" height="14" width="12" y="400" x="204" stroke="none" fill="none"/>
+    <path d="M 210 414 v 10 m -3 -3 l 3 3 l 3 -3" stroke="#ffffff" stroke-width="1.5" fill="none"/>
+    <text fill="#8b949e" font-family="monospace" font-size="9" x="220" y="425">Ф3</text>
+  </g>
+
+  <!-- Feeder 4 -->
+  <g id="F4">
+    <line stroke="#ffffff" stroke-width="1.5" x1="270" y1="360" x2="270" y2="400"/>
+    <rect class="XCBR" height="14" width="12" y="400" x="264" stroke-width="1.5" stroke="#ffffff" fill="#ffffff">
+      <animate id="open" attributeName="fill" attributeType="XML" to="black" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="transition" attributeName="fill" attributeType="XML" to="green" dur="10ms" fill="freeze" begin="indefinite" />
+      <animate id="close" attributeName="fill" attributeType="XML" to="white" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="error" attributeName="fill" attributeType="XML" to="red" dur="10ms" fill="freeze" begin="indefinite" />
+    </rect>
+    <rect class="CSWI" height="14" width="12" y="400" x="264" stroke="none" fill="none"/>
+    <path d="M 270 414 v 10 m -3 -3 l 3 3 l 3 -3" stroke="#ffffff" stroke-width="1.5" fill="none"/>
+    <text fill="#8b949e" font-family="monospace" font-size="9" x="280" y="425">Ф4</text>
+  </g>
+
+  <!-- Feeder 5 -->
+  <g id="F5">
+    <line stroke="#ffffff" stroke-width="1.5" x1="400" y1="360" x2="400" y2="400"/>
+    <rect class="XCBR" height="14" width="12" y="400" x="394" stroke-width="1.5" stroke="#ffffff" fill="#ffffff">
+      <animate id="open" attributeName="fill" attributeType="XML" to="black" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="transition" attributeName="fill" attributeType="XML" to="green" dur="10ms" fill="freeze" begin="indefinite" />
+      <animate id="close" attributeName="fill" attributeType="XML" to="white" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="error" attributeName="fill" attributeType="XML" to="red" dur="10ms" fill="freeze" begin="indefinite" />
+    </rect>
+    <rect class="CSWI" height="14" width="12" y="400" x="394" stroke="none" fill="none"/>
+    <path d="M 400 414 v 10 m -3 -3 l 3 3 l 3 -3" stroke="#ffffff" stroke-width="1.5" fill="none"/>
+    <text fill="#8b949e" font-family="monospace" font-size="9" x="410" y="425">Ф5</text>
+  </g>
+
+  <!-- Feeder 6 -->
+  <g id="F6">
+    <line stroke="#ffffff" stroke-width="1.5" x1="460" y1="360" x2="460" y2="400"/>
+    <rect class="XCBR" height="14" width="12" y="400" x="454" stroke-width="1.5" stroke="#ffffff" fill="#ffffff">
+      <animate id="open" attributeName="fill" attributeType="XML" to="black" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="transition" attributeName="fill" attributeType="XML" to="green" dur="10ms" fill="freeze" begin="indefinite" />
+      <animate id="close" attributeName="fill" attributeType="XML" to="white" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="error" attributeName="fill" attributeType="XML" to="red" dur="10ms" fill="freeze" begin="indefinite" />
+    </rect>
+    <rect class="CSWI" height="14" width="12" y="400" x="454" stroke="none" fill="none"/>
+    <path d="M 460 414 v 10 m -3 -3 l 3 3 l 3 -3" stroke="#ffffff" stroke-width="1.5" fill="none"/>
+    <text fill="#8b949e" font-family="monospace" font-size="9" x="470" y="425">Ф6</text>
+  </g>
+
+  <!-- Feeder 7 -->
+  <g id="F7">
+    <line stroke="#ffffff" stroke-width="1.5" x1="520" y1="360" x2="520" y2="400"/>
+    <rect class="XCBR" height="14" width="12" y="400" x="514" stroke-width="1.5" stroke="#ffffff" fill="#ffffff">
+      <animate id="open" attributeName="fill" attributeType="XML" to="black" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="transition" attributeName="fill" attributeType="XML" to="green" dur="10ms" fill="freeze" begin="indefinite" />
+      <animate id="close" attributeName="fill" attributeType="XML" to="white" dur="100ms" fill="freeze" begin="indefinite" />
+      <animate id="error" attributeName="fill" attributeType="XML" to="red" dur="10ms" fill="freeze" begin="indefinite" />
+    </rect>
+    <rect class="CSWI" height="14" width="12" y="400" x="514" stroke="none" fill="none"/>
+    <path d="M 520 414 v 10 m -3 -3 l 3 3 l 3 -3" stroke="#ffffff" stroke-width="1.5" fill="none"/>
+    <text fill="#8b949e" font-family="monospace" font-size="9" x="530" y="425">Ф7</text>
+  </g>
+
+  <!-- Hidden MEAS for IED2 PTOC -->
+  <text id="iec61850://10.0.0.3:102/[MX] IED2_PTOCGenericIO/GGIO1.AnIn1.mag.f" class="MEAS" data-text="" fill="none" stroke="none" x="0" y="0"></text>
+
  </g>
 </svg>

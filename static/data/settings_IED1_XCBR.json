@@ -1,0 +1,16 @@
+[
+  {
+    "group": "Группа 1 — Рабочие уставки",
+    "device": "IED1_XCBR",
+    "settings": [
+      {"id": "cbr_close_time", "name": "Время включения выключателя", "value": 65, "unit": "мс", "min": 20, "max": 200, "step": 1},
+      {"id": "cbr_open_time", "name": "Время отключения выключателя", "value": 45, "unit": "мс", "min": 10, "max": 150, "step": 1},
+      {"id": "cbr_reclose_1", "name": "Бестоковая пауза АПВ 1-й цикл", "value": 0.5, "unit": "с", "min": 0.1, "max": 5.0, "step": 0.1},
+      {"id": "cbr_reclose_2", "name": "Бестоковая пауза АПВ 2-й цикл", "value": 3.0, "unit": "с", "min": 0.5, "max": 30.0, "step": 0.5},
+      {"id": "spring_charge", "name": "Контроль заводки пружины", "value": "Включён", "unit": "", "options": ["Включён", "Отключён"]},
+      {"id": "cbr_wear_limit", "name": "Порог износа (кол-во операций)", "value": 5000, "unit": "шт", "min": 100, "max": 50000, "step": 100},
+      {"id": "sf6_pressure_min", "name": "Минимальное давление SF6", "value": 5.8, "unit": "бар", "min": 4.0, "max": 8.0, "step": 0.1},
+      {"id": "UROV_delay", "name": "Задержка УРОВ", "value": 0.3, "unit": "с", "min": 0.05, "max": 2.0, "step": 0.05}
+    ]
+  }
+]

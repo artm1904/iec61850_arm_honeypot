@@ -1,0 +1,34 @@
+[
+  {
+    "group": "Группа 1 — Рабочие уставки",
+    "device": "IED2_PTOC",
+    "settings": [
+      {"id": "I_pickup_ph", "name": "Ток срабатывания МТЗ (фазный)", "value": 450, "unit": "А", "min": 100, "max": 2000, "step": 10},
+      {"id": "I_pickup_gnd", "name": "Ток срабатывания ТЗНП", "value": 50, "unit": "А", "min": 5, "max": 500, "step": 5},
+      {"id": "T_delay_1st", "name": "Выдержка времени I ступень", "value": 0.0, "unit": "с", "min": 0.0, "max": 10.0, "step": 0.05},
+      {"id": "T_delay_2nd", "name": "Выдержка времени II ступень", "value": 0.5, "unit": "с", "min": 0.0, "max": 10.0, "step": 0.05},
+      {"id": "T_delay_3rd", "name": "Выдержка времени III ступень", "value": 1.5, "unit": "с", "min": 0.0, "max": 60.0, "step": 0.1},
+      {"id": "K_return", "name": "Коэффициент возврата", "value": 0.95, "unit": "", "min": 0.8, "max": 1.0, "step": 0.01},
+      {"id": "I_blocking", "name": "Ток блокировки", "value": 100, "unit": "А", "min": 0, "max": 1000, "step": 10},
+      {"id": "U_min_block", "name": "Напряжение блокировки минимальное", "value": 80, "unit": "В", "min": 0, "max": 120, "step": 1},
+      {"id": "dir_mode", "name": "Направленность", "value": "Ненаправленная", "unit": "", "options": ["Ненаправленная", "Направленная вперёд", "Направленная назад"]},
+      {"id": "curve_type", "name": "Характеристика срабатывания", "value": "ДЗ", "unit": "", "options": ["ДЗ", "МТЗ", "IEC Normal Inverse", "IEC Very Inverse", "IEC Extremely Inverse"]}
+    ]
+  },
+  {
+    "group": "Группа 2 — Резервные уставки",
+    "device": "IED2_PTOC",
+    "settings": [
+      {"id": "I_pickup_ph", "name": "Ток срабатывания МТЗ (фазный)", "value": 500, "unit": "А", "min": 100, "max": 2000, "step": 10},
+      {"id": "I_pickup_gnd", "name": "Ток срабатывания ТЗНП", "value": 60, "unit": "А", "min": 5, "max": 500, "step": 5},
+      {"id": "T_delay_1st", "name": "Выдержка времени I ступень", "value": 0.0, "unit": "с", "min": 0.0, "max": 10.0, "step": 0.05},
+      {"id": "T_delay_2nd", "name": "Выдержка времени II ступень", "value": 0.6, "unit": "с", "min": 0.0, "max": 10.0, "step": 0.05},
+      {"id": "T_delay_3rd", "name": "Выдержка времени III ступень", "value": 2.0, "unit": "с", "min": 0.0, "max": 60.0, "step": 0.1},
+      {"id": "K_return", "name": "Коэффициент возврата", "value": 0.93, "unit": "", "min": 0.8, "max": 1.0, "step": 0.01},
+      {"id": "I_blocking", "name": "Ток блокировки", "value": 120, "unit": "А", "min": 0, "max": 1000, "step": 10},
+      {"id": "U_min_block", "name": "Напряжение блокировки минимальное", "value": 75, "unit": "В", "min": 0, "max": 120, "step": 1},
+      {"id": "dir_mode", "name": "Направленность", "value": "Ненаправленная", "unit": "", "options": ["Ненаправленная", "Направленная вперёд", "Направленная назад"]},
+      {"id": "curve_type", "name": "Характеристика срабатывания", "value": "МТЗ", "unit": "", "options": ["ДЗ", "МТЗ", "IEC Normal Inverse", "IEC Very Inverse", "IEC Extremely Inverse"]}
+    ]
+  }
+]

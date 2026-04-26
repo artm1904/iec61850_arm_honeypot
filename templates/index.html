@@ -1,68 +1,787 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang='ru'>
 <head>
-<title>webclient</title>
+<title>АРМ РЗА — Мнемосхема</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="static/css/layout.css" rel="stylesheet" type="text/css"></link>
-
+<link href="static/css/layout.css" rel="stylesheet" type="text/css">
 <script src="static/lib/svg-pan-zoom.min.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script>
-if (typeof jQuery == 'undefined') {
-    document.write(unescape("%3Cscript type='text/javascript' src='static/lib/jquery-3.5.1.min.js'%3E%3C/script%3E"));
-}
-</script>
-<script type="text/javascript" src="static/lib/pop.js"></script>
-<script type="text/javascript" src="static/lib/socket.io.js"></script>
-<script type="text/javascript" src="static/lib/tdi.tabs.js"></script>
-<script type="text/javascript" src="static/client.js"></script>
+<script>if(typeof jQuery=='undefined'){document.write(unescape("%3Cscript src='static/lib/jquery-3.5.1.min.js'%3E%3C/script%3E"));}</script>
+<script src="static/lib/pop.js"></script>
+<script src="static/lib/socket.io.js"></script>
+<script src="static/lib/tdi.tabs.js"></script>
+<script src="static/client.js"></script>
+<style>
+/* ═══ TOOLBAR ═══ */
+.toolbar{position:fixed;top:0;left:0;right:0;height:38px;background:linear-gradient(180deg,#1a2332,#111927);border-bottom:2px solid #00b9a0;display:flex;align-items:center;padding:0 8px;z-index:1000;gap:1px}
+.toolbar-section{display:flex;align-items:center;gap:1px;padding:0 5px;border-right:1px solid #30363d;height:100%}
+.toolbar-section:last-child{border-right:none}
+.toolbar-section.right{margin-left:auto;border-right:none;border-left:1px solid #30363d}
+.tb-btn{background:0 0;border:1px solid transparent;color:#8b949e;font-size:10px;padding:3px 6px;cursor:pointer;border-radius:3px;white-space:nowrap;font-family:inherit;transition:all .15s}
+.tb-btn:hover{background:rgba(0,185,160,.15);color:#fff;border-color:#30363d}
+.tb-btn:active{background:rgba(0,185,160,.3)}
+.tb-btn:disabled{opacity:.3;cursor:not-allowed}
+.tb-btn:disabled:hover{background:0 0;color:#8b949e;border-color:transparent}
+.tb-label{font-size:9px;color:#484f58;text-transform:uppercase;letter-spacing:.5px;margin-right:3px}
+.user-badge{font-size:10px;color:#00b9a0;background:rgba(0,185,160,.1);padding:2px 8px;border-radius:10px;border:1px solid rgba(0,185,160,.2)}
+.role-badge{font-size:9px;color:#6e7681;padding:2px 6px;border-radius:10px;border:1px solid #30363d}
+.statusbar{position:fixed;bottom:0;left:0;right:0;height:20px;background:#0d1117;border-top:1px solid #30363d;display:flex;align-items:center;padding:0 10px;font-size:10px;color:#484f58;z-index:1000;gap:15px}
+.statusbar .status-dot{width:6px;height:6px;border-radius:50%;background:#3fb950;display:inline-block;margin-right:4px}
+.wrap{padding-top:42px!important;height:calc(100vh - 20px)!important}
 
+/* ═══ MODALS ═══ */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:2000;justify-content:center;align-items:center}
+.modal-overlay.visible{display:flex}
+.modal-box{background:#161b22;border:1px solid #30363d;border-radius:6px;width:92vw;max-width:1200px;max-height:90vh;overflow:auto;box-shadow:0 16px 48px rgba(0,0,0,.5);display:flex;flex-direction:column}
+.modal-header{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:linear-gradient(90deg,#00b9a0,#006d5b);color:#000;font-weight:700;font-size:13px;flex-shrink:0}
+.modal-close{cursor:pointer;font-size:18px;color:#000;background:0 0;border:none;font-weight:700}
+.modal-body{padding:14px;overflow:auto;flex:1}
+
+/* ═══ DATA MODEL TABLE ═══ */
+#datamodel{overflow:auto;font-size:11px}
+#datamodel table,#CurrentIEDModel{width:100%;border-collapse:collapse;font-size:11px}
+#datamodel table tr,#CurrentIEDModel tr{cursor:pointer;transition:background .1s}
+#datamodel table tr:hover,#CurrentIEDModel tr:hover{background:rgba(0,185,160,.12)}
+#datamodel table td,#CurrentIEDModel td{padding:3px 6px;border-bottom:1px solid #21262d;color:#c9d1d9;font-family:monospace;font-size:11px;white-space:nowrap}
+#datamodel table td:first-child,#CurrentIEDModel td:first-child{color:#00b9a0}
+#datamodel table td:nth-child(2),#CurrentIEDModel td:nth-child(2){color:#79c0ff}
+
+/* ═══ EVENT TABLE ═══ */
+.ev-table{width:100%;border-collapse:collapse;font-size:11px}
+.ev-table th{background:#1a2332;color:#8b949e;text-transform:uppercase;font-size:10px;letter-spacing:.5px;padding:6px 8px;text-align:left;position:sticky;top:0;z-index:1;border-bottom:2px solid #00b9a0}
+.ev-table td{padding:4px 8px;border-bottom:1px solid #21262d}
+.ev-table tr:hover{background:rgba(0,185,160,.05)}
+.ev-table tr.sev-red{background:rgba(248,81,73,.08)}
+.ev-table tr.sev-yellow{background:rgba(227,179,65,.08)}
+.ev-table tr.sev-green{background:rgba(63,185,80,.05)}
+.ev-table tr.sev-orange{background:rgba(240,136,62,.08)}
+.ev-table .ev-type{font-weight:700;text-align:center;padding:2px 6px;border-radius:3px;font-size:10px}
+.ev-filter{background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:4px 8px;font-size:11px;border-radius:3px;margin-right:6px}
+
+/* ═══ SETTINGS TABLE ═══ */
+.set-table{width:100%;border-collapse:collapse;font-size:12px}
+.set-table th{background:#1a2332;color:#8b949e;padding:6px 8px;text-align:left;font-size:10px;text-transform:uppercase}
+.set-table td{padding:5px 8px;border-bottom:1px solid #21262d}
+.set-table input,.set-table select{background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:4px 6px;font-size:12px;border-radius:3px;width:100%}
+.set-table input:focus,.set-table select:focus{outline:none;border-color:#00b9a0}
+
+/* ═══ DIAG TABLE ═══ */
+.diag-row{display:flex;gap:8px;margin-bottom:4px;font-size:12px}
+.diag-label{color:#8b949e;min-width:200px}
+.diag-val{color:#c9d1d9;font-family:monospace}
+.diag-ok{color:#3fb950}.diag-warn{color:#e3b341}.diag-err{color:#f85149}
+
+/* ═══ TERMINAL CONFIG ═══ */
+.cfg-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cfg-card{background:#0d1117;border:1px solid #30363d;border-radius:4px;padding:12px}
+.cfg-card h4{color:#00b9a0;margin:0 0 8px;font-size:13px}
+.cfg-table{width:100%;border-collapse:collapse;font-size:11px}
+.cfg-table th{background:#1a2332;color:#8b949e;padding:4px 6px;text-align:left;font-size:10px}
+.cfg-table td{padding:3px 6px;border-bottom:1px solid #21262d}
+.led-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+
+/* ═══ TABS inside modals ═══ */
+.mtabs{display:flex;gap:0;border-bottom:2px solid #30363d;margin-bottom:12px}
+.mtab{padding:8px 16px;font-size:12px;color:#8b949e;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+.mtab:hover{color:#fff}
+.mtab.active{color:#00b9a0;border-bottom-color:#00b9a0}
+.mtab-content{display:none}.mtab-content.active{display:block}
+
+/* ═══ MINI BUTTONS ═══ */
+.mini-btn{background:rgba(255,0,255,.15);border:none;color:#fff;padding:5px 12px;cursor:pointer;border-radius:3px;font-size:11px;font-weight:700;transition:background .15s}
+.mini-btn:hover{background:rgba(255,0,255,.4)}
+.mini-btn:disabled{opacity:.3;cursor:not-allowed}
+.mini-btn.green{background:rgba(63,185,80,.2)}.mini-btn.green:hover{background:rgba(63,185,80,.4)}
+.mini-btn.red{background:rgba(248,81,73,.2)}.mini-btn.red:hover{background:rgba(248,81,73,.4)}
+.dev-select{background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:6px 10px;font-size:12px;border-radius:3px}
+
+/* ═══ OSC CHART ═══ */
+.osc-chart-area{min-height:300px;background:#0d1117;border:1px solid #30363d;border-radius:3px;position:relative;overflow:hidden}
+</style>
 </head>
-<body><!--onload="draw()"-->
+<body>
 
+<!-- ═══ TOOLBAR ═══ -->
+<div class="toolbar">
+  <div class="toolbar-section">
+    <span class="tb-label">Файл</span>
+    <button class="tb-btn" onclick="simAction('load_config')" {% if not role_info.can_config %}disabled{% endif %}>📂 Конфигурация</button>
+    <button class="tb-btn" onclick="simAction('generate_report')">📋 Отчёт</button>
+  </div>
+  <div class="toolbar-section">
+    <span class="tb-label">Управление</span>
+    <button class="tb-btn" onclick="simAction('start_polling')" {% if not role_info.can_control %}disabled{% endif %}>▶ Опрос</button>
+    <button class="tb-btn" onclick="simAction('reinit')" {% if not role_info.can_control %}disabled{% endif %}>🔄 Рестарт</button>
+    <button class="tb-btn" onclick="simAction('reset_interlocks')" {% if not role_info.can_control %}disabled{% endif %}>🔓 Блокировки</button>
+    <button class="tb-btn" onclick="simAction('sync_time')" {% if not role_info.can_control %}disabled{% endif %}>🕐 Время</button>
+  </div>
+  <div class="toolbar-section">
+    <span class="tb-label">Графики</span>
+    <button class="tb-btn" onclick="openModal('liveCharts')">📊 Токи (мгновенные)</button>
+    <button class="tb-btn" onclick="openModal('liveCharts');switchLiveTab(1)">⚡ Напряжения (мгновенные)</button>
+  </div>
+  <div class="toolbar-section">
+    <span class="tb-label">Нагрузка</span>
+    <button class="tb-btn red" style="color:#f85149" onclick="groundingKnifeConnect()" {% if not role_info.can_control %}disabled{% endif %}>🔻 ЗН: Включить</button>
+    <button class="tb-btn green" style="color:#3fb950" onclick="groundingKnifeDisconnect()" {% if not role_info.can_control %}disabled{% endif %}>🔺 ЗН: Отключить</button>
+  </div>
+  <div class="toolbar-section">
+    <span class="tb-label">Модули</span>
+    <button class="tb-btn" onclick="openModal('eventJournal')">📖 Журнал</button>
+    <button class="tb-btn" onclick="openModal('settings')">⚙ Уставки</button>
+    <button class="tb-btn" onclick="openModal('oscillograms')">📈 Осциллограммы</button>
+    <button class="tb-btn" onclick="openModal('diagnostics')">🔧 Диагностика</button>
+    <button class="tb-btn" onclick="openModal('termConfig')">🖥 Терминал</button>
+  </div>
+  <div class="toolbar-section right">
+    <span class="user-badge">{{ username }}</span>
+    <span class="role-badge">{{ role_label }}</span>
+    <a href="/logout" class="tb-btn" style="color:#f85149;">⏻</a>
+  </div>
+</div>
+
+<!-- ═══ MAIN ═══ -->
 <main id='main_content'>
 <div class='wrap'>
-
   <div class="column middle">
-    <h2 class='h2 teal'>HMI</h2>	
+    <h2 class='h2 teal'>Мнемосхема</h2>
     <div class='content'>
       <div id="network" class="network">
-	{% if local_svg %}
+      {% if local_svg %}
         <object data="static/mmi.local.svg" type="image/svg+xml" id="mmi_svg" width="100%" height="100%"></object>
-	{% else %}
+      {% else %}
         <object data="static/mmi.remote.svg" type="image/svg+xml" id="mmi_svg" width="100%" height="100%"></object>
-	{% endif %}
+      {% endif %}
       </div>
-    </div>	
-  </div>
-
-  <div class="splitter"></div>
-
-  <div class="column rightside" id="hostinfo">
-    <h2 class='h2 teal'>IED</h2>	
-    <div class='content'>
-      <h3>datamodel</h3>
-      <pre id="datamodel"></pre>
-    </div>	
-  </div>
-
-	<div class="footer" id="hostlog">
-		<!-- Tab Body Start -->
-		<div class="tabcontents" id="hostlogbody">
-			<pre id="localhost"> 
-      </pre>
     </div>
-		<!-- Tab Body End --> 
-		<!-- Tab Headers Start -->
-		<ul class="tabs" id="hostlogtab">
-			<li><a data-toggle="tab" id='localhost_tab' href="#localhost">localhost</a></li>
-		</ul>
-		<!-- Tab Headers End --> 
-	</div>
-
+  </div>
+  <div class="splitter"></div>
+  <div class="column rightside" id="hostinfo">
+    <h2 class='h2 teal'>Модель данных РЗА</h2>
+    <div class='content'>
+      <div id="datamodel"></div>
+    </div>
+  </div>
+  <div class="footer" id="hostlog">
+    <div class="tabcontents" id="hostlogbody"><pre id="localhost"></pre></div>
+    <ul class="tabs" id="hostlogtab">
+      <li><a data-toggle="tab" id='localhost_tab' href="#localhost">Системный журнал</a></li>
+    </ul>
+  </div>
 </div>
 </main>
+
+<!-- ═══ STATUS BAR ═══ -->
+<div class="statusbar">
+  <span><span class="status-dot"></span>Подключено</span>
+  <span>IEC 61850 MMS / GOOSE</span>
+  <span>{{ request.host }}</span>
+  <span id="clock"></span>
+  <span style="margin-left:auto">АИИС-РЗА v3.2.1</span>
+</div>
+
+<!-- ═══════════════════ MODAL: LIVE CHARTS ═══════════════════ -->
+<div class="modal-overlay" id="modal_liveCharts">
+<div class="modal-box" style="max-width:1100px">
+  <div class="modal-header">📊 Мгновенные графики тока и напряжения <button class="modal-close" onclick="closeLiveCharts()">✕</button></div>
+  <div class="modal-body">
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+      <div class="mtabs" id="liveTabs" style="margin-bottom:0;border-bottom:none">
+        <div class="mtab active" onclick="switchLiveTab(0)">⚡ Токи (I)</div>
+        <div class="mtab" onclick="switchLiveTab(1)">🔌 Напряжения (U)</div>
+        <div class="mtab" onclick="switchLiveTab(2)">⚡+🔌 Совмещённый</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+        <label style="font-size:11px;color:#8b949e">Отсчётов:</label>
+        <select class="dev-select" id="liveTail" style="padding:3px 6px;font-size:11px">
+          <option value="100">100</option><option value="250">250</option><option value="500" selected>500</option><option value="1000">1000</option><option value="2000">2000</option>
+        </select>
+        <label style="font-size:11px;color:#8b949e">Обновл. (мс):</label>
+        <select class="dev-select" id="liveInterval" style="padding:3px 6px;font-size:11px" onchange="resetLiveInterval()">
+          <option value="500">500</option><option value="1000" selected>1000</option><option value="2000">2000</option><option value="5000">5000</option>
+        </select>
+        <button class="mini-btn green" onclick="toggleLiveUpdate()" id="liveToggle">▶ Старт</button>
+        <button class="mini-btn" onclick="fetchLiveData()">Однократно</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <div style="flex:0 0 140px;max-height:450px;overflow:auto" id="liveChannels"></div>
+      <div style="flex:1">
+        <canvas id="liveCanvas" style="width:100%;border:1px solid #30363d;border-radius:3px;background:#0d1117"></canvas>
+        <div id="liveInfo" style="font-size:10px;color:#6e7681;margin-top:4px"></div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- ═══ GROUNDING KNIFE WARNING OVERLAY ═══ -->
+<div class="modal-overlay" id="modal_groundWarn">
+<div class="modal-box" style="max-width:550px">
+  <div class="modal-header" style="background:linear-gradient(90deg,#f85149,#da3633)">⚠ ОПАСНЫЙ РЕЖИМ РАБОТЫ</div>
+  <div class="modal-body" style="text-align:center;padding:24px">
+    <div style="font-size:48px;margin-bottom:12px">⚡</div>
+    <h3 style="color:#f85149;margin-bottom:12px">Включение заземляющих ножей!</h3>
+    <p style="color:#c9d1d9;font-size:13px;line-height:1.6;margin-bottom:16px">
+      Подключение заземляющих ножей приведёт к <strong style="color:#f85149">короткому замыканию</strong> на нагрузке.<br>
+      Сопротивление нагрузки будет снижено до <strong>1 Ом</strong> (с 550 Ом).<br>
+      Возможны токи КЗ многократно превышающие номинальные.<br><br>
+      <strong>Убедитесь, что релейная защита находится в рабочем режиме.</strong>
+    </p>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <button class="mini-btn red" style="padding:10px 24px;font-size:14px" onclick="confirmGroundConnect()">⚡ Подтвердить включение ЗН</button>
+      <button class="mini-btn" style="padding:10px 24px;font-size:14px" onclick="closeModal('groundWarn')">Отмена</button>
+    </div>
+  </div>
+</div></div>
+
+<!-- ═══════════════════ MODAL: EVENT JOURNAL ═══════════════════ -->
+<div class="modal-overlay" id="modal_eventJournal">
+<div class="modal-box" style="max-width:1300px">
+  <div class="modal-header">📖 Журнал событий <button class="modal-close" onclick="closeModal('eventJournal')">✕</button></div>
+  <div class="modal-body">
+    <div style="margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span style="color:#8b949e;font-size:12px" id="evCount">Загрузка...</span>
+      <input class="ev-filter" id="evFilterText" placeholder="Поиск по тексту..." onkeyup="filterEvents()">
+      <select class="ev-filter" id="evFilterType" onchange="filterEvents()"><option value="">Все типы</option></select>
+      <button class="mini-btn" onclick="loadEvents()">Обновить</button>
+    </div>
+    <div style="max-height:65vh;overflow:auto">
+      <table class="ev-table"><thead><tr>
+        <th>№</th><th>Метка времени</th><th>Тип</th><th>Текст</th><th>Значение</th><th>Источник</th><th>Устройство</th><th>Время получения</th>
+      </tr></thead><tbody id="evBody"></tbody></table>
+    </div>
+  </div>
+</div></div>
+
+<!-- ═══════════════════ MODAL: SETTINGS ═══════════════════ -->
+<div class="modal-overlay" id="modal_settings">
+<div class="modal-box">
+  <div class="modal-header">⚙ Работа с уставками защит <button class="modal-close" onclick="closeModal('settings')">✕</button></div>
+  <div class="modal-body">
+    <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center">
+      <label style="color:#8b949e;font-size:12px">Устройство:</label>
+      <select class="dev-select" id="setDevice" onchange="loadSettings()">
+        <option value="IED1_XCBR">IED1_XCBR — Защита выключателя</option>
+        <option value="IED2_PTOC">IED2_PTOC — Токовая защита</option>
+      </select>
+      <button class="mini-btn" onclick="loadSettings()">Считать</button>
+      <button class="mini-btn green" onclick="saveSettings()" {% if not role_info.can_config %}disabled{% endif %}>Сохранить</button>
+      <button class="mini-btn" onclick="exportSettings()">Экспорт</button>
+      <button class="mini-btn" onclick="importSettings()" {% if not role_info.can_config %}disabled{% endif %}>Импорт</button>
+      <button class="mini-btn" onclick="openSettingsJournal()">Журнал изменений</button>
+      <button class="mini-btn" onclick="compareGroups()">Сравнить группы</button>
+    </div>
+    <div id="settingsContent">
+      <p style="color:#6e7681">Выберите устройство и нажмите «Считать»</p>
+    </div>
+    <div id="settingsCompare" style="display:none;margin-top:12px">
+      <h4 style="color:#00b9a0;margin-bottom:8px">Результат сравнения групп:</h4>
+      <table class="set-table"><thead><tr><th>Параметр</th><th>Группа 1</th><th>Группа 2</th><th>Статус</th></tr></thead>
+      <tbody id="compareBody"></tbody></table>
+    </div>
+  </div>
+</div></div>
+
+<!-- ═══════════════════ MODAL: OSCILLOGRAMS ═══════════════════ -->
+<div class="modal-overlay" id="modal_oscillograms">
+<div class="modal-box" style="max-width:1200px">
+  <div class="modal-header">📈 Осциллограммы (COMTRADE IEC 60255-24) <button class="modal-close" onclick="closeModal('oscillograms')">✕</button></div>
+  <div class="modal-body">
+    <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center">
+      <label style="color:#8b949e;font-size:12px">Устройство:</label>
+      <select class="dev-select" id="oscDevice" onchange="loadOscList()"></select>
+      <button class="mini-btn" onclick="loadOscList()">Считать с устройства</button>
+      <button class="mini-btn green" onclick="triggerOsc()" {% if not role_info.can_control %}disabled{% endif %}>Ручной пуск</button>
+      <button class="mini-btn red" onclick="deleteSelOsc()" {% if not role_info.can_config %}disabled{% endif %}>Удалить</button>
+    </div>
+    <div style="display:flex;gap:14px">
+      <div style="flex:0 0 240px">
+        <h4 style="color:#00b9a0;margin-bottom:6px;font-size:12px">Архив записей:</h4>
+        <ul id="oscFileList" style="list-style:none;padding:0;max-height:400px;overflow:auto"></ul>
+      </div>
+      <div style="flex:1">
+        <h4 style="color:#00b9a0;margin-bottom:6px;font-size:12px">Просмотр:</h4>
+        <div class="osc-chart-area" id="oscChartArea"><canvas id="oscCanvas"></canvas>
+          <div id="oscPlaceholder" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#484f58;font-size:13px">Выберите запись</div>
+        </div>
+        <div id="oscChannelInfo" style="margin-top:6px;font-size:11px;color:#6e7681"></div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- ═══════════════════ MODAL: DIAGNOSTICS ═══════════════════ -->
+<div class="modal-overlay" id="modal_diagnostics">
+<div class="modal-box" style="max-width:800px">
+  <div class="modal-header">🔧 Диагностика каналов связи <button class="modal-close" onclick="closeModal('diagnostics')">✕</button></div>
+  <div class="modal-body">
+    <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center">
+      <label style="color:#8b949e;font-size:12px">Терминал:</label>
+      <select class="dev-select" id="diagDevice"></select>
+      <button class="mini-btn" onclick="runDiagnostics()">Запустить диагностику</button>
+    </div>
+    <div id="diagResults"><p style="color:#6e7681">Выберите терминал и запустите диагностику</p></div>
+  </div>
+</div></div>
+
+<!-- ═══════════════════ MODAL: TERMINAL CONFIG ═══════════════════ -->
+<div class="modal-overlay" id="modal_termConfig">
+<div class="modal-box">
+  <div class="modal-header">🖥 Конфигурирование терминала <button class="modal-close" onclick="closeModal('termConfig')">✕</button></div>
+  <div class="modal-body">
+    <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center">
+      <label style="color:#8b949e;font-size:12px">Терминал:</label>
+      <select class="dev-select" id="tcDevice" onchange="loadTermConfig()"></select>
+      <button class="mini-btn" onclick="loadTermConfig()">Загрузить</button>
+      <button class="mini-btn green" onclick="exportTermConfig()">Экспорт конфигурации</button>
+      <button class="mini-btn" onclick="importTermConfig()" {% if not role_info.can_config %}disabled{% endif %}>Импорт</button>
+      <button class="mini-btn" onclick="simAction('generate_report')">Отчёт конфигурации</button>
+      <button class="mini-btn red" onclick="setTestMode()" {% if not role_info.can_control %}disabled{% endif %}>Режим тестирования</button>
+    </div>
+    <!-- Tabs -->
+    <div class="mtabs" id="tcTabs">
+      <div class="mtab active" onclick="switchTcTab(0)">Свойства</div>
+      <div class="mtab" onclick="switchTcTab(1)">Дискр. входы</div>
+      <div class="mtab" onclick="switchTcTab(2)">Выходные реле</div>
+      <div class="mtab" onclick="switchTcTab(3)">Светодиоды</div>
+      <div class="mtab" onclick="switchTcTab(4)">Осциллограф</div>
+      <div class="mtab" onclick="switchTcTab(5)">Протоколы</div>
+    </div>
+    <div id="tcContent"><p style="color:#6e7681">Выберите терминал</p></div>
+  </div>
+</div></div>
+
+<script>
+/* ═══ GLOBALS ═══ */
+var _devices = [];
+var _selectedOsc = null;
+var _settingsData = null;
+var CAN_CONTROL = {{ 'true' if role_info.can_control else 'false' }};
+var CAN_CONFIG = {{ 'true' if role_info.can_config else 'false' }};
+
+/* ═══ CLOCK ═══ */
+setInterval(function(){document.getElementById('clock').textContent=new Date().toLocaleString('ru-RU')},1000);
+
+/* ═══ MODAL SYSTEM ═══ */
+function openModal(id){
+  logInteraction('modal_'+id,'open','');
+  document.getElementById('modal_'+id).classList.add('visible');
+  if(id==='eventJournal') loadEvents();
+  if(id==='oscillograms') {populateDeviceSelects(); loadOscList();}
+  if(id==='diagnostics') populateDeviceSelects();
+  if(id==='termConfig') {populateDeviceSelects(); loadTermConfig();}
+  if(id==='settings') loadSettings();
+}
+function closeModal(id){document.getElementById('modal_'+id).classList.remove('visible')}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){document.querySelectorAll('.modal-overlay.visible').forEach(function(m){m.classList.remove('visible')})}});
+
+/* ═══ UI TELEMETRY ═══ */
+function logInteraction(el,action,val){
+  if(typeof socket!=='undefined') socket.emit('ui_interaction',{element:el,action:action,value:val||'',page_url:location.href,viewport:innerWidth+'x'+innerHeight,ts:new Date().toISOString()});
+}
+document.addEventListener('click',function(e){var b=e.target.closest('button,.tb-btn,.controlBtn,.mini-btn,a');if(b)logInteraction(b.textContent.trim().substring(0,40),'click',b.id||b.className)});
+
+/* ═══ NOTIFICATIONS ═══ */
+function showNotification(msg,type){
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;top:48px;right:16px;z-index:3000;padding:10px 16px;border-radius:4px;font-size:12px;max-width:380px;box-shadow:0 4px 12px rgba(0,0,0,.5);transition:opacity .3s;';
+  t.style.background=type==='error'?'rgba(248,81,73,.9)':'rgba(0,185,160,.9)';
+  t.style.color=type==='error'?'#fff':'#000';
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(function(){t.style.opacity='0';setTimeout(function(){t.remove()},300)},4000);
+}
+
+/* ═══ SIM ACTIONS ═══ */
+function simAction(action,filename){
+  logInteraction('sim_'+action,'command',filename||'');
+  if(action==='load_config'){var i=document.createElement('input');i.type='file';i.accept='.cid,.icd,.xml,.cfg';i.onchange=function(){socket.emit('sim_action',{action:action,filename:this.files[0]?this.files[0].name:''},function(d){showNotification(d.msg||'Готово',d.status==='error'?'error':'success')})};i.click();return}
+  socket.emit('sim_action',{action:action,filename:filename||''},function(d){showNotification(d.msg||'Готово',d.status==='error'?'error':'success')});
+}
+
+/* ═══ DEVICE SELECTS ═══ */
+function populateDeviceSelects(){
+  if(_devices.length>0){fillSelects();return}
+  fetch('/api/devices').then(function(r){return r.json()}).then(function(d){_devices=d.devices||[];fillSelects()});
+}
+function fillSelects(){
+  ['oscDevice','diagDevice','tcDevice'].forEach(function(sid){
+    var s=document.getElementById(sid);if(!s)return;
+    s.innerHTML='';_devices.forEach(function(d){var o=document.createElement('option');o.value=d.id;o.textContent=d.id+' — '+d.name;s.appendChild(o)});
+  });
+}
+
+/* ═══ EVENT JOURNAL ═══ */
+var _events=[];
+function loadEvents(){
+  fetch('/api/events').then(function(r){return r.json()}).then(function(data){
+    _events=data;
+    document.getElementById('evCount').textContent='Загружено событий: '+data.length;
+    var types={};data.forEach(function(e){types[e.type]=1});
+    var sel=document.getElementById('evFilterType');var cur=sel.value;sel.innerHTML='<option value="">Все типы</option>';
+    Object.keys(types).sort().forEach(function(t){sel.innerHTML+='<option value="'+t+'">'+t+'</option>'});sel.value=cur;
+    renderEvents(data);
+  });
+}
+function filterEvents(){
+  var txt=document.getElementById('evFilterText').value.toLowerCase();
+  var typ=document.getElementById('evFilterType').value;
+  renderEvents(_events.filter(function(e){return(!txt||e.text.toLowerCase().indexOf(txt)>=0||e.device.toLowerCase().indexOf(txt)>=0)&&(!typ||e.type===typ)}));
+}
+function renderEvents(list){
+  var html='';list.forEach(function(e){
+    var cls='sev-'+e.severity;
+    var tc=e.severity==='red'?'#f85149':e.severity==='yellow'?'#e3b341':e.severity==='green'?'#3fb950':e.severity==='orange'?'#f0883e':'#79c0ff';
+    html+='<tr class="'+cls+'">'
+      +'<td>'+e.id+'</td><td style="white-space:nowrap">'+e.timestamp+'</td>'
+      +'<td><span class="ev-type" style="background:'+tc+'22;color:'+tc+'">'+e.type+'</span></td>'
+      +'<td>'+e.text+'</td><td>'+e.value+'</td><td>'+e.source+'</td><td>'+e.device+'</td>'
+      +'<td style="white-space:nowrap">'+e.received+'</td></tr>';
+  });
+  document.getElementById('evBody').innerHTML=html;
+}
+
+/* Data model rendering handled by client.js info_event → writeValueModel */
+
+/* ═══ SETTINGS ═══ */
+function loadSettings(){
+  var dev=document.getElementById('setDevice').value;
+  logInteraction('settings_load','read',dev);
+  fetch('/api/settings/'+dev).then(function(r){return r.json()}).then(function(data){
+    if(data.error){document.getElementById('settingsContent').innerHTML='<p style="color:#f85149">'+data.error+'</p>';return}
+    _settingsData=data;
+    var html='';
+    data.forEach(function(grp,gi){
+      html+='<h4 style="color:#00b9a0;margin:12px 0 6px">'+grp.group+'</h4>';
+      html+='<table class="set-table"><thead><tr><th>Параметр</th><th>Значение</th><th>Ед.</th><th>Диапазон</th></tr></thead><tbody>';
+      grp.settings.forEach(function(s){
+        var inp;
+        if(s.options){
+          inp='<select data-group="'+gi+'" data-id="'+s.id+'"'+(CAN_CONFIG?'':' disabled')+'>';
+          s.options.forEach(function(o){inp+='<option'+(o===s.value?' selected':'')+'>'+o+'</option>'});
+          inp+='</select>';
+        } else {
+          inp='<input type="'+(typeof s.value==='number'?'number':'text')+'" value="'+s.value+'" data-group="'+gi+'" data-id="'+s.id+'"'
+            +(s.min!==undefined?' min="'+s.min+'"':'')+(s.max!==undefined?' max="'+s.max+'"':'')
+            +(s.step!==undefined?' step="'+s.step+'"':'')+(CAN_CONFIG?'':' disabled')+'>';
+        }
+        var range=s.min!==undefined?s.min+' — '+s.max:'—';
+        html+='<tr><td>'+s.name+'</td><td>'+inp+'</td><td>'+s.unit+'</td><td>'+range+'</td></tr>';
+      });
+      html+='</tbody></table>';
+    });
+    document.getElementById('settingsContent').innerHTML=html;
+    document.getElementById('settingsCompare').style.display='none';
+  }).catch(function(e){document.getElementById('settingsContent').innerHTML='<p style="color:#f85149">Ошибка: '+e+'</p>'});
+}
+function saveSettings(){
+  if(!_settingsData)return;
+  var dev=document.getElementById('setDevice').value;
+  // Collect values from inputs
+  document.querySelectorAll('#settingsContent input, #settingsContent select').forEach(function(inp){
+    var gi=parseInt(inp.dataset.group);var id=inp.dataset.id;
+    _settingsData[gi].settings.forEach(function(s){if(s.id===id)s.value=inp.type==='number'?parseFloat(inp.value):inp.value});
+  });
+  fetch('/api/settings/'+dev+'/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(_settingsData)})
+    .then(function(r){return r.json()}).then(function(d){showNotification(d.msg||'Сохранено',d.status==='error'?'error':'success')});
+}
+function exportSettings(){var dev=document.getElementById('setDevice').value;window.open('/api/settings/'+dev+'/export','_blank')}
+function importSettings(){
+  var inp=document.createElement('input');inp.type='file';inp.accept='.json';
+  inp.onchange=function(){
+    var r=new FileReader();r.onload=function(e){
+      try{var d=JSON.parse(e.target.result);_settingsData=d;showNotification('Файл загружен. Нажмите "Сохранить" для применения.','success');loadSettings()}
+      catch(err){showNotification('Ошибка разбора файла: '+err,'error')}
+    };r.readAsText(this.files[0])
+  };inp.click();
+}
+function openSettingsJournal(){
+  logInteraction('settings_journal','open','');
+  fetch('/api/settings/journal').then(function(r){return r.json()}).then(function(data){
+    var html='<h4 style="color:#00b9a0;margin-bottom:8px">Журнал изменений уставок</h4>';
+    if(!data.length){html+='<p style="color:#6e7681">Нет записей</p>';} else {
+      html+='<table class="set-table"><thead><tr><th>Дата</th><th>Пользователь</th><th>Устройство</th><th>Действие</th><th>IP</th></tr></thead><tbody>';
+      data.forEach(function(e){html+='<tr><td>'+e.timestamp+'</td><td>'+e.user+'</td><td>'+e.device+'</td><td>'+e.action+'</td><td>'+e.ip+'</td></tr>'});
+      html+='</tbody></table>';
+    }
+    document.getElementById('settingsCompare').innerHTML=html;document.getElementById('settingsCompare').style.display='block';
+  });
+}
+function compareGroups(){
+  if(!_settingsData||_settingsData.length<2){showNotification('Нужно минимум 2 группы для сравнения','error');return}
+  logInteraction('settings_compare','compare','');
+  fetch('/api/settings/compare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({group_a:_settingsData[0].settings,group_b:_settingsData[1].settings})})
+    .then(function(r){return r.json()}).then(function(diffs){
+      var html='';diffs.forEach(function(d){
+        var c=d.status==='modified'?'#e3b341':d.status==='added'?'#3fb950':'#f85149';
+        html+='<tr><td>'+d.name+' ('+d.id+')</td><td>'+d.value_a+'</td><td>'+d.value_b+'</td><td style="color:'+c+'">'+d.status+'</td></tr>';
+      });
+      if(!diffs.length) html='<tr><td colspan=4 style="color:#3fb950;text-align:center">Различий не найдено</td></tr>';
+      document.getElementById('compareBody').innerHTML=html;document.getElementById('settingsCompare').style.display='block';
+    });
+}
+
+/* ═══ OSCILLOGRAMS ═══ */
+function loadOscList(){
+  var dev=document.getElementById('oscDevice').value;
+  logInteraction('osc_load','list',dev);
+  fetch('/api/comtrade/device/'+dev).then(function(r){return r.json()}).then(function(files){
+    var ul=document.getElementById('oscFileList');
+    if(!files.length){ul.innerHTML='<li style="color:#6e7681;padding:6px">Нет записей</li>';return}
+    ul.innerHTML='';files.forEach(function(f){
+      var li=document.createElement('li');
+      li.style.cssText='padding:6px 10px;border:1px solid #30363d;margin-bottom:3px;border-radius:3px;cursor:pointer;font-size:12px;transition:background .15s';
+      li.textContent='📄 '+f.name;
+      li.onclick=function(){document.querySelectorAll('#oscFileList li').forEach(function(el){el.style.borderColor='#30363d';el.style.background=''});li.style.borderColor='#00b9a0';li.style.background='rgba(0,185,160,.1)';_selectedOsc=f.name;loadOscillogram(f.name)};
+      ul.appendChild(li);
+    });
+  });
+}
+function triggerOsc(){
+  var dev=document.getElementById('oscDevice').value;
+  fetch('/api/comtrade/trigger/'+dev,{method:'POST'}).then(function(r){return r.json()}).then(function(d){showNotification(d.msg,'success')});
+}
+function deleteSelOsc(){
+  if(!_selectedOsc){showNotification('Выберите запись','error');return}
+  if(!confirm('Удалить осциллограмму '+_selectedOsc+'?'))return;
+  fetch('/api/comtrade/delete/'+_selectedOsc,{method:'DELETE'}).then(function(r){return r.json()}).then(function(d){showNotification('Удалено: '+d.deleted.join(', '),'success');loadOscList()});
+}
+function loadOscillogram(bn){
+  document.getElementById('oscPlaceholder').textContent='Загрузка...';document.getElementById('oscPlaceholder').style.display='block';
+  fetch('/api/comtrade/read/'+bn).then(function(r){return r.json()}).then(function(d){if(d.error){document.getElementById('oscPlaceholder').textContent='Ошибка: '+d.error;return}renderOscillogram(d)}).catch(function(e){document.getElementById('oscPlaceholder').textContent=e});
+}
+function renderOscillogram(data){
+  var canvas=document.getElementById('oscCanvas'),ctx=canvas.getContext('2d'),area=document.getElementById('oscChartArea');
+  canvas.width=area.clientWidth;canvas.height=Math.max(300,data.channels.length*100);
+  document.getElementById('oscPlaceholder').style.display='none';
+  var colors=['#00b9a0','#f0883e','#bc8cff','#f85149','#79c0ff','#3fb950','#e3b341','#a5d6ff'];
+  var chH=canvas.height/data.channels.length;
+  ctx.fillStyle='#0d1117';ctx.fillRect(0,0,canvas.width,canvas.height);
+  data.channels.forEach(function(ch,ci){
+    var yB=ci*chH;ctx.strokeStyle='#21262d';ctx.beginPath();ctx.moveTo(0,yB+chH);ctx.lineTo(canvas.width,yB+chH);ctx.stroke();
+    ctx.fillStyle=colors[ci%colors.length];ctx.font='11px sans-serif';ctx.fillText(ch.name+(ch.unit?' ('+ch.unit+')':''),5,yB+14);
+    var mn=Infinity,mx=-Infinity;ch.data.forEach(function(v){if(v<mn)mn=v;if(v>mx)mx=v});var rg=mx-mn||1;
+    ctx.strokeStyle=colors[ci%colors.length];ctx.lineWidth=1.2;ctx.beginPath();
+    ch.data.forEach(function(v,i){var x=(i/ch.data.length)*canvas.width,y=yB+chH-18-((v-mn)/rg)*(chH-28);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});
+    ctx.stroke();ctx.fillStyle='#484f58';ctx.font='9px monospace';ctx.fillText(mx.toFixed(1),canvas.width-55,yB+14);ctx.fillText(mn.toFixed(1),canvas.width-55,yB+chH-4);
+  });
+  document.getElementById('oscChannelInfo').textContent=data.channels.map(function(c){return c.name+': '+c.data.length+' отсч.'}).join(' | ');
+}
+
+/* ═══ DIAGNOSTICS ═══ */
+function runDiagnostics(){
+  var dev=document.getElementById('diagDevice').value;if(!dev)return;
+  logInteraction('diagnostics','run',dev);
+  document.getElementById('diagResults').innerHTML='<p style="color:#6e7681">Выполняется...</p>';
+  fetch('/api/diagnostics/'+dev).then(function(r){return r.json()}).then(function(d){
+    if(d.error){document.getElementById('diagResults').innerHTML='<p style="color:#f85149">'+d.error+'</p>';return}
+    var rows=[
+      ['IP-адрес',d.ip,''],['Порт MMS',d.port,''],
+      ['Пинг (мс)',d.ping_ms,d.ping_ms<20?'diag-ok':'diag-warn'],
+      ['Статус',d.status,d.status==='OK'?'diag-ok':'diag-err'],
+      ['MMS Association',d.mms_association,d.mms_association==='Установлена'?'diag-ok':'diag-err'],
+      ['GOOSE принято (пакетов)',d.goose_rx,''],['GOOSE потеряно',d.goose_lost,d.goose_lost>0?'diag-warn':'diag-ok'],
+      ['SV принято',d.sv_rx,''],
+      ['Возраст последнего отчёта (с)',d.last_report_age_s,d.last_report_age_s<10?'diag-ok':'diag-warn'],
+      ['Прошивка',d.firmware,''],['Аптайм (часов)',d.uptime_hours,''],
+      ['CPU загрузка (%)',d.cpu_load_pct,d.cpu_load_pct<70?'diag-ok':'diag-warn'],
+      ['RAM (МБ)',d.ram_used_mb,''],['Flash свободно (%)',d.flash_free_pct,d.flash_free_pct>20?'diag-ok':'diag-warn']
+    ];
+    var html='<h4 style="color:#00b9a0;margin-bottom:10px">Результат диагностики: '+dev+'</h4>';
+    rows.forEach(function(r){html+='<div class="diag-row"><span class="diag-label">'+r[0]+'</span><span class="diag-val '+r[2]+'">'+r[1]+'</span></div>'});
+    document.getElementById('diagResults').innerHTML=html;
+  });
+}
+
+/* ═══ TERMINAL CONFIG ═══ */
+var _tcData=null;
+function loadTermConfig(){
+  var dev=document.getElementById('tcDevice').value;if(!dev)return;
+  logInteraction('term_config','load',dev);
+  fetch('/api/devices/'+dev+'/config').then(function(r){return r.json()}).then(function(d){
+    if(d.error){document.getElementById('tcContent').innerHTML='<p style="color:#f85149">'+d.error+'</p>';return}
+    _tcData=d;renderTermConfig(d);switchTcTab(0);
+  });
+}
+function renderTermConfig(d){
+  var tc=d.terminal_config||{};
+  // Tab 0: Properties
+  var t0='<div class="cfg-grid"><div class="cfg-card"><h4>Свойства терминала</h4>';
+  [['Модель',d.model],['Серийный номер',d.serial],['Прошивка',d.firmware],['IP',d.ip+':'+d.port],['Протокол',d.protocol],['Размещение',d.location],['Статус',d.status],['Функции',(d.functions||[]).join(', ')],['COMTRADE записей',d.comtrade_count],['DI/DO/LED',d.di_count+'/'+d.do_count+'/'+d.led_count]].forEach(function(p){t0+='<div class="diag-row"><span class="diag-label">'+p[0]+'</span><span class="diag-val">'+p[1]+'</span></div>'});
+  t0+='</div></div>';
+
+  // Tab 1: DI
+  var t1='<table class="cfg-table"><thead><tr><th>№</th><th>Сигнал</th><th>Тип</th></tr></thead><tbody>';
+  (tc.di||[]).forEach(function(x){t1+='<tr><td>DI'+x.num+'</td><td>'+x.signal+'</td><td>'+x.type+'</td></tr>'});
+  t1+='</tbody></table>';
+
+  // Tab 2: DO
+  var t2='<table class="cfg-table"><thead><tr><th>№</th><th>Сигнал</th><th>Тип</th></tr></thead><tbody>';
+  (tc.do||[]).forEach(function(x){t2+='<tr><td>DO'+x.num+'</td><td>'+x.signal+'</td><td>'+x.type+'</td></tr>'});
+  if(!(tc.do||[]).length) t2+='<tr><td colspan=3 style="color:#6e7681">Нет выходных реле</td></tr>';
+  t2+='</tbody></table>';
+
+  // Tab 3: LEDs
+  var t3='<table class="cfg-table"><thead><tr><th>№</th><th>Сигнал</th><th>Цвет</th></tr></thead><tbody>';
+  (tc.leds||[]).forEach(function(x){var c=x.color==='red'?'#f85149':x.color==='green'?'#3fb950':x.color==='yellow'?'#e3b341':'#c9d1d9';t3+='<tr><td>LED'+x.num+'</td><td>'+x.signal+'</td><td><span class="led-dot" style="background:'+c+'"></span>'+x.color+'</td></tr>'});
+  t3+='</tbody></table>';
+
+  // Tab 4: Oscillograph
+  var osc=tc.oscillograph;
+  var t4='';
+  if(osc){
+    t4='<div class="cfg-card"><h4>Параметры осциллографа</h4>';
+    [['Аналоговые каналы',osc.channels_analog],['Дискретные каналы',osc.channels_digital],['Частота дискр. (Гц)',osc.sample_rate],['Претриггер (мс)',osc.pretrigger_ms],['Посттриггер (мс)',osc.posttrigger_ms],['Макс. записей',osc.max_records]].forEach(function(p){t4+='<div class="diag-row"><span class="diag-label">'+p[0]+'</span><span class="diag-val">'+p[1]+'</span></div>'});
+    t4+='<div class="diag-row"><span class="diag-label">Источники пуска</span><span class="diag-val">'+osc.trigger_sources.join(', ')+'</span></div></div>';
+  } else { t4='<p style="color:#6e7681">Осциллограф не настроен</p>'; }
+
+  // Tab 5: Protocols
+  var pr=tc.protocols||{};
+  var t5='<table class="cfg-table"><thead><tr><th>Протокол</th><th>Статус</th><th>Параметры</th></tr></thead><tbody>';
+  for(var pn in pr){
+    var pi=pr[pn];var params=[];for(var k in pi){if(k!=='enabled')params.push(k+'='+pi[k])}
+    t5+='<tr><td style="text-transform:uppercase">'+pn+'</td><td style="color:'+(pi.enabled?'#3fb950':'#f85149')+'">'+(pi.enabled?'Включён':'Отключён')+'</td><td>'+params.join(', ')+'</td></tr>';
+  }
+  t5+='</tbody></table>';
+
+  document.getElementById('tcContent').innerHTML='<div class="mtab-content active" data-tab="0">'+t0+'</div><div class="mtab-content" data-tab="1">'+t1+'</div><div class="mtab-content" data-tab="2">'+t2+'</div><div class="mtab-content" data-tab="3">'+t3+'</div><div class="mtab-content" data-tab="4">'+t4+'</div><div class="mtab-content" data-tab="5">'+t5+'</div>';
+}
+function switchTcTab(n){
+  document.querySelectorAll('#tcTabs .mtab').forEach(function(t,i){t.classList.toggle('active',i===n)});
+  document.querySelectorAll('#tcContent .mtab-content').forEach(function(c){c.classList.toggle('active',c.dataset.tab==n)});
+}
+function exportTermConfig(){if(_tcData){var b=new Blob([JSON.stringify(_tcData,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=_tcData.id+'_config.json';a.click();showNotification('Конфигурация экспортирована','success')}}
+function importTermConfig(){var i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=function(){showNotification('Конфигурация загружена (предпросмотр)','success')};i.click()}
+function setTestMode(){if(confirm('Перевести терминал в режим тестирования? Все защиты будут заблокированы!')){simAction('diagnostic');showNotification('Терминал переведён в режим тестирования','success')}}
+
+/* Data model is handled natively by client.js info_event handler */
+
+/* ═══ LIVE CHARTS ═══ */
+var _liveTimer=null;
+var _liveRunning=false;
+var _liveTab=0;
+var _liveData=null;
+var _liveChannelVis={};
+
+function switchLiveTab(n){
+  _liveTab=n;
+  document.querySelectorAll('#liveTabs .mtab').forEach(function(t,i){t.classList.toggle('active',i===n)});
+  if(_liveData) renderLiveChart();
+}
+function openLiveCharts(){openModal('liveCharts')}
+function closeLiveCharts(){closeModal('liveCharts');stopLiveUpdate()}
+function toggleLiveUpdate(){
+  if(_liveRunning){stopLiveUpdate()}else{startLiveUpdate()}
+}
+function startLiveUpdate(){
+  _liveRunning=true;
+  document.getElementById('liveToggle').textContent='⏹ Стоп';
+  document.getElementById('liveToggle').classList.remove('green');document.getElementById('liveToggle').classList.add('red');
+  var iv=parseInt(document.getElementById('liveInterval').value)||1000;
+  fetchLiveData();
+  _liveTimer=setInterval(fetchLiveData,iv);
+}
+function stopLiveUpdate(){
+  _liveRunning=false;
+  document.getElementById('liveToggle').textContent='▶ Старт';
+  document.getElementById('liveToggle').classList.add('green');document.getElementById('liveToggle').classList.remove('red');
+  if(_liveTimer){clearInterval(_liveTimer);_liveTimer=null}
+}
+function resetLiveInterval(){if(_liveRunning){stopLiveUpdate();startLiveUpdate()}}
+function fetchLiveData(){
+  var tail=document.getElementById('liveTail').value;
+  fetch('/api/plot_data?tail='+tail).then(function(r){return r.json()}).then(function(d){
+    if(d.error){showNotification('Симулятор: '+d.error,'error');return}
+    _liveData=d;
+    buildChannelList();
+    renderLiveChart();
+  }).catch(function(e){showNotification('Plot data error: '+e,'error')});
+}
+function buildChannelList(){
+  if(!_liveData)return;
+  var el=document.getElementById('liveChannels');
+  var html='<div style="font-size:10px;color:#8b949e;margin-bottom:6px">Каналы:</div>';
+  var colors=['#00b9a0','#f0883e','#bc8cff','#f85149','#79c0ff','#3fb950','#e3b341','#a5d6ff'];
+  var all=(_liveData.keys_A||[]).concat(_liveData.keys_V||[]);
+  all.forEach(function(k,i){
+    if(_liveChannelVis[k]===undefined)_liveChannelVis[k]=true;
+    var c=colors[i%colors.length];
+    var short=k.replace(/v\.x|_ctr\.vctr|xs12_/g,'').substring(0,20);
+    var chk=_liveChannelVis[k]?'checked':'';
+    html+='<label style="display:flex;align-items:center;gap:4px;font-size:10px;cursor:pointer;margin-bottom:3px;color:'+c+'">';
+    html+='<input type="checkbox" '+chk+' onchange="_liveChannelVis[\''+k+'\']=this.checked;renderLiveChart()" style="accent-color:'+c+'"> '+short+'</label>';
+  });
+  el.innerHTML=html;
+}
+function renderLiveChart(){
+  var canvas=document.getElementById('liveCanvas');
+  var ctx=canvas.getContext('2d');
+  var w=canvas.parentElement.clientWidth;canvas.width=w;canvas.height=380;
+  ctx.fillStyle='#0d1117';ctx.fillRect(0,0,w,380);
+  var colors=['#00b9a0','#f0883e','#bc8cff','#f85149','#79c0ff','#3fb950','#e3b341','#a5d6ff'];
+  // Collect visible channels
+  var channels=[];
+  if(_liveTab===0||_liveTab===2){
+    var keys=_liveData.keys_A||[];var ci=0;
+    keys.forEach(function(k){if(_liveChannelVis[k]!==false){channels.push({key:k,data:_liveData.currents[k],color:colors[ci%colors.length],type:'I'});ci++}});
+  }
+  if(_liveTab===1||_liveTab===2){
+    var keys=_liveData.keys_V||[];var ci=channels.length;
+    keys.forEach(function(k){if(_liveChannelVis[k]!==false){channels.push({key:k,data:_liveData.voltages[k],color:colors[ci%colors.length],type:'U'});ci++}});
+  }
+  if(!channels.length){ctx.fillStyle='#484f58';ctx.font='13px sans-serif';ctx.fillText('Нет данных (запустите опрос)',w/2-80,190);return}
+  // Find global min/max to auto-scale
+  var gMin=Infinity,gMax=-Infinity;
+  channels.forEach(function(ch){ch.data.forEach(function(v){if(v<gMin)gMin=v;if(v>gMax)gMax=v})});
+  var range=gMax-gMin||1;
+  var pad=20;
+  // Grid lines
+  ctx.strokeStyle='#21262d';ctx.lineWidth=0.5;
+  for(var gy=0;gy<5;gy++){var yy=pad+(380-2*pad)*gy/4;ctx.beginPath();ctx.moveTo(40,yy);ctx.lineTo(w,yy);ctx.stroke();
+    ctx.fillStyle='#484f58';ctx.font='9px monospace';ctx.fillText((gMax-range*gy/4).toFixed(1),0,yy+3)}
+  // Waveforms
+  channels.forEach(function(ch){
+    ctx.strokeStyle=ch.color;ctx.lineWidth=1.3;ctx.beginPath();
+    ch.data.forEach(function(v,i){var x=40+(i/(ch.data.length-1||1))*(w-50);var y=pad+((gMax-v)/range)*(380-2*pad);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});
+    ctx.stroke();
+  });
+  // Legend
+  var lx=50;
+  channels.forEach(function(ch){
+    ctx.fillStyle=ch.color;ctx.font='10px sans-serif';
+    var label=ch.key.replace(/v\.x|_ctr\.vctr|xs12_/g,'').substring(0,15)+' ('+ch.type+')';
+    ctx.fillText('■ '+label,lx,380-4);lx+=ctx.measureText('■ '+label).width+12;
+  });
+  document.getElementById('liveInfo').textContent='Шагов: '+(_liveData.steps||0)+' | Каналов I: '+(_liveData.keys_A||[]).length+' | Каналов U: '+(_liveData.keys_V||[]).length;
+}
+
+/* ═══ GROUNDING KNIFE ═══ */
+var GROUND_NODE='@r.xs12_e1_w1_bb1_load.r1[r]';
+var GROUND_NORMAL='5.500000e+02';
+var GROUND_SHORT='1';
+
+function groundingKnifeConnect(){
+  logInteraction('grounding_knife','warn_dialog','');
+  openModal('groundWarn');
+}
+function confirmGroundConnect(){
+  closeModal('groundWarn');
+  logInteraction('grounding_knife','connect',GROUND_SHORT);
+  fetch('/api/sim_node',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({node:GROUND_NODE,value:GROUND_SHORT})})
+    .then(function(r){return r.json()}).then(function(d){
+      if(d.error){showNotification('Ошибка: '+d.error,'error');return}
+      showNotification('⚡ ЗАЗЕМЛЯЮЩИЕ НОЖИ ВКЛЮЧЕНЫ! Режим КЗ на нагрузке. Rн = 1 Ом','error');
+    });
+}
+function groundingKnifeDisconnect(){
+  logInteraction('grounding_knife','disconnect',GROUND_NORMAL);
+  if(!confirm('Отключить заземляющие ножи и восстановить нормальный режим (Rн = 550 Ом)?'))return;
+  fetch('/api/sim_node',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({node:GROUND_NODE,value:GROUND_NORMAL})})
+    .then(function(r){return r.json()}).then(function(d){
+      if(d.error){showNotification('Ошибка: '+d.error,'error');return}
+      showNotification('✅ Заземляющие ножи отключены. Нормальный режим восстановлен. Rн = 550 Ом','success');
+    });
+}
+</script>
 </body>
 </html>
-
